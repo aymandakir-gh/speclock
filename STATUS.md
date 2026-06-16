@@ -25,7 +25,7 @@
 | M2 check + adapter | resolver, checker, Vitest adapter, `check`, `status`, dogfood green | ✅ done |
 | M3 self-gate + demo | CI self-gate job (live & green), demo tape | ✅ done |
 | M4 Launch polish | README, CONTRIBUTING, adapter docs, CHANGELOG, release | ✅ done |
-| M5 `v0.2.0` Jest | shared spawn/parse helper, Jest adapter, `examples/jest-demo`, both-dir CI, SL-10 | ⏳ next |
+| M5 `v0.2.0` Jest | shared spawn/parse helper, Jest adapter, `examples/jest-demo`, both-dir CI, SL-10 | ✅ done |
 | M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ⏳ |
 | M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ⏳ |
 | M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ⏳ |
@@ -57,6 +57,14 @@
   against `tests/fixtures/sample-vitest-project/`. **`speclock check` is green on
   speclock: 8/8 criteria ✅.** Verified the negative path (untested criterion →
   exit 1). 54 tests passing. CI self-gate job enabled.
+
+## Done (post-0.1)
+
+- **M5 `v0.2.0`:** Jest adapter + `examples/jest-demo` (real Jest project) +
+  runner-agnostic `scripts/verify-example.mjs` asserting both directions in CI.
+  Adapter internals refactored into shared `spawn.ts` / `run-json.ts` /
+  `jest-report.ts`. SL-10 added; `speclock check` gates **10/10** on itself; 80
+  tests passing.
 
 ## Key decisions (see PRD §8)
 

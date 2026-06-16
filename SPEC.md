@@ -58,8 +58,15 @@ Writes are confined to a markdown spec (`init`) and a YAML lock under `specs/`
 (`plan`), always inside the project. A stray `--spec`/`--out` can never clobber a
 user's source or tests, or escape the project directory.
 
+### SL-10: a Jest adapter runs the suite
+
+The Jest adapter runs `jest --json` and normalizes its (Jest-compatible) report
+into the same runner-agnostic pass/fail/skip result, sharing the pure parser
+with the Vitest adapter. Selected with `speclock check --runner jest`.
+
 ## Out of Scope
 
-- Adapters beyond Vitest (Jest/pytest/go ship later; the interface is ready).
+- Adapters beyond Vitest/Jest/pytest (`go test` and others ship later; the
+  interface is ready).
 - Modifying user source or tests (speclock only writes SPEC.md and specs/).
 - Network access or telemetry of any kind.

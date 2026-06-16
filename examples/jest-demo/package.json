@@ -1,0 +1,13 @@
+{
+  "name": "speclock-jest-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Example project: speclock gating a real Jest suite.",
+  "scripts": {
+    "test": "jest",
+    "check": "speclock check --runner jest"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0"
+  }
+}

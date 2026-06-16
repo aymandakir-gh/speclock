@@ -44,6 +44,38 @@ jobs:
       - name: Build
         run: pnpm build
 
+  # Prove each adapter end-to-end against a real example project, asserting BOTH
+  # directions: `speclock check` exits 0 when mapped tests pass, and non-zero when
+  # a mapped test is deleted or made to fail.
+  examples:
+    name: example (${{ matrix.runner }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: jest, dir: examples/jest-demo }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Verify ${{ matrix.runner }} adapter (both directions)
+        run: node scripts/verify-example.mjs ${{ matrix.dir }} ${{ matrix.runner }}
+
   # The ultimate proof: speclock gates itself on its own spec. Builds speclock,
   # then runs `speclock check` against speclock's own SPEC.md + specs/spec.yaml.
   self-gate:

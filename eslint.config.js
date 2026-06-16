@@ -3,10 +3,24 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'coverage', 'node_modules', 'tests/fixtures'],
+    ignores: ['dist', 'coverage', 'node_modules', 'tests/fixtures', 'examples'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    // Node ESM helper scripts (build/verify tooling), not part of the package.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        URL: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
+  },
   {
     rules: {
       '@typescript-eslint/no-unused-vars': [

@@ -1,8 +1,8 @@
 # Writing a test-runner adapter
 
 speclock doesn't run tests itself — it asks an **adapter** to run your suite and
-hand back a normalized result. Vitest ships first; this guide shows how to add
-another runner (Jest, pytest, `go test`, …).
+hand back a normalized result. **Vitest and Jest ship today**; this guide shows
+how to add another runner (pytest, `go test`, …).
 
 ## The contract
 
@@ -54,19 +54,37 @@ process:
 2. **A thin runner** — `run()` spawns the test process, points it at a structured
    reporter, reads the output, and calls the parser.
 
-This is exactly how the Vitest adapter is built (`src/adapters/vitest.ts`):
+This is exactly how the Vitest and Jest adapters are built — they share both the
+pure parser (`src/adapters/jest-report.ts`, since Vitest's JSON reporter is
+Jest-compatible) and the I/O helpers:
+
+- `src/adapters/spawn.ts` — `resolveLocalBin(startDir, bin)` and `spawnProcess()`
+  (a hard timeout that kills the whole process group; UTF-8 capture).
+- `src/adapters/run-json.ts` — `runJsonReporter()` spawns a runner that writes a
+  JSON report to a temp file, reads it, parses it, and cleans up.
 
 ```ts
-export function parseVitestReport(report: unknown): TestRunResult { /* pure */ }
+import { resolveLocalBin } from './spawn.js';
+import { runJsonReporter } from './run-json.js';
+import { parseJestStyleReport } from './jest-report.js';
 
-export const vitestAdapter: TestRunnerAdapter = {
-  name: 'vitest',
-  async run({ cwd, configPath, timeoutMs }) {
-    // spawn `vitest run --reporter=json --outputFile=<tmp> --passWithNoTests`
-    // read the JSON, then: return parseVitestReport(json)
+export const jestAdapter: TestRunnerAdapter = {
+  name: 'jest',
+  run(options) {
+    const bin = resolveLocalBin(options.cwd, 'jest');
+    if (!bin) throw new AdapterError('Could not find a jest binary…');
+    return runJsonReporter({
+      bin, cwd: options.cwd, timeoutMs: options.timeoutMs ?? 120_000, label: 'jest',
+      buildArgs: (out) => ['--json', `--outputFile=${out}`, '--passWithNoTests'],
+      parse: parseJestStyleReport,
+    });
   },
 };
 ```
+
+A runner that emits XML or another format (e.g. pytest's JUnit XML) writes its
+own pure parser instead of reusing `parseJestStyleReport`, but still leans on
+`spawn.ts` for the process plumbing.
 
 ### Normalizing status
 
@@ -100,16 +118,18 @@ so make the message actionable.
 
 ## Registering it
 
-Add it to the registry in `src/adapters/index.ts`:
+Add it to the registry in `src/adapters/index.ts` (Vitest and Jest are already
+there):
 
 ```ts
 const REGISTRY: Record<string, TestRunnerAdapter> = {
   vitest: vitestAdapter,
-  jest: jestAdapter,   // <- your new adapter
+  jest: jestAdapter,
+  pytest: pytestAdapter,   // <- your new adapter
 };
 ```
 
-Users select it with `speclock check --runner jest`.
+Users select it with `speclock check --runner pytest`.
 
 ## Checklist
 

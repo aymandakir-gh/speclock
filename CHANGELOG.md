@@ -4,6 +4,29 @@ All notable changes to speclock are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims to follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-06-16
+
+Second adapter and the start of the road to 1.0.
+
+### Added
+
+- **Jest adapter** (`speclock check --runner jest`). Runs `jest --json` and
+  normalizes the report into the same pass/fail/skip result. Because Vitest's
+  JSON reporter is Jest-compatible, the pure parser is shared between the two.
+- **`examples/jest-demo`** — a real, runnable Jest project gated by speclock,
+  used in CI to assert **both** directions: `speclock check` exits `0` when every
+  mapped test passes, and non-zero when a mapped test is deleted or made to fail
+  (`scripts/verify-example.mjs`, runner-agnostic).
+- New self-criterion **SL-10** (the Jest adapter), so `speclock check` now gates
+  **10/10** on itself.
+
+### Changed
+
+- Adapter internals refactored into shared helpers — `spawn.ts` (binary
+  resolution + timeout-killing spawn), `run-json.ts` (temp-file JSON report
+  runner), and `jest-report.ts` (the shared Jest-compatible parser) — so the
+  Vitest and Jest adapters are thin and a third adapter is cheap to add.
+
 ## [0.1.1] — 2026-06-16
 
 Hardening pass from an adversarial multi-agent review (15 confirmed findings).
@@ -62,5 +85,6 @@ gating itself in CI.
   taken by an unrelated project; this package is `speclock-cli` (command:
   `speclock`). Registry publish is pending a naming decision — see `PRD.md` §8.
 
+[0.2.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.2.0
 [0.1.1]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.1.1
 [0.1.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.1.0

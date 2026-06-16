@@ -33,3 +33,6 @@ criteria:
   - id: SL-9
     description: speclock only writes spec and lock files
     tests: []
+  - id: SL-10
+    description: a Jest adapter runs the suite
+    tests: []
