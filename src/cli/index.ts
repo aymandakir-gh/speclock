@@ -2,6 +2,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
+import { runInit } from './commands/init.js';
+import { runPlan } from './commands/plan.js';
+import { err } from './ui.js';
 
 function readVersion(): string {
   try {
@@ -19,10 +22,48 @@ const program = new Command();
 
 program
   .name('speclock')
-  .description('Lock the spec, gate the merge. Spec-driven development for the agentic era.')
-  .version(readVersion(), '-v, --version', 'print the speclock version');
+  .description(
+    'Lock the spec, gate the merge. Spec-driven development for the agentic era.',
+  )
+  .version(readVersion(), '-v, --version', 'print the speclock version')
+  .showHelpAfterError('(add --help for usage)');
 
-program.parseAsync(process.argv).catch((err: unknown) => {
-  process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
+program
+  .command('init')
+  .description('Scaffold a SPEC.md template')
+  .option('-s, --spec <path>', 'path to the spec file', 'SPEC.md')
+  .option('-f, --force', 'overwrite an existing spec file', false)
+  .action((opts: { spec: string; force: boolean }) => {
+    process.exitCode = runInit({ spec: opts.spec, force: opts.force });
+  });
+
+program
+  .command('plan')
+  .description('Read SPEC.md and lock its acceptance criteria into specs/*.yaml')
+  .option('-s, --spec <path>', 'path to the spec file', 'SPEC.md')
+  .option('-o, --out <path>', 'path to the lock file to write (default: specs/<spec>.yaml)')
+  .action((opts: { spec: string; out?: string }) => {
+    process.exitCode = runPlan({ spec: opts.spec, out: opts.out });
+  });
+
+program.addHelpText(
+  'after',
+  `
+Workflow:
+  speclock init     scaffold SPEC.md
+  speclock plan     lock criteria into specs/*.yaml
+  speclock check    gate: every criterion must map to a passing test (coming in M2)
+  speclock status   coverage map of criteria (coming in M3)
+
+Docs: https://github.com/aymandakir-gh/speclock`,
+);
+
+if (process.argv.length <= 2) {
+  program.outputHelp();
+  process.exit(0);
+}
+
+program.parseAsync(process.argv).catch((e: unknown) => {
+  err(e instanceof Error ? e.message : String(e));
   process.exitCode = 1;
 });

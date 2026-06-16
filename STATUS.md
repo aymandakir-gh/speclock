@@ -5,16 +5,15 @@
 
 ## Now
 
-- **M0 Bootstrap** — in progress. PRD committed, scaffold green locally
-  (typecheck + lint + test + build + run all pass), creating repo + CI.
+- **M2 check + adapter** — next. M0 + M1 landed; CI green on a clean checkout.
 
 ## Milestones
 
 | Milestone | Scope | State |
 |-----------|-------|-------|
-| M0 Bootstrap | PRD, scaffold, configs, CI, repo, green baseline | 🚧 in progress |
-| M1 Core | SPEC parser, criteria model, `init`, `plan`, fixtures | ⬜ next |
-| M2 check + adapter | resolver, checker, Vitest adapter, `check`, dogfood begins | ⬜ |
+| M0 Bootstrap | PRD, scaffold, configs, CI, repo, green baseline | ✅ done |
+| M1 Core | SPEC parser, criteria model, `init`, `plan`, fixtures | ✅ done |
+| M2 check + adapter | resolver, checker, Vitest adapter, `check`, dogfood begins | 🚧 next |
 | M3 status + self-gate | `status`, `speclock check` green on speclock, CI self-gate | ⬜ |
 | M4 Launch polish | README, CONTRIBUTING, adapter docs, release | ⬜ |
 
@@ -28,6 +27,14 @@
 - `src/core/spec-parser.ts` — SPEC.md → criteria, fence-aware, with warnings and
   hard errors for duplicate/empty criteria. 11 unit tests, all passing.
 - `src/cli/index.ts` — commander entry, `--version`/`--help` working.
+- **M0:** GitHub repo `aymandakir-gh/speclock` (public, MIT), CI (node 20 & 22)
+  green on the first push.
+- **M1:** `src/core/lock.ts` (lock model + merge + YAML round-trip, 14 tests),
+  `src/core/templates.ts` (SPEC scaffold), `src/cli/io.ts` + `src/cli/ui.ts`,
+  `init` and `plan` commands. Verified end-to-end against a temp project: init
+  refuses to clobber without --force; plan locks criteria, preserves hand-added
+  test mappings on re-plan, updates reworded criteria, and drops removed ones.
+  Fixture in `tests/fixtures/sample-spec-project/`. 23 tests passing.
 
 ## Key decisions (see PRD §8)
 
