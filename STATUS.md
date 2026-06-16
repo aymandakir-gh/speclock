@@ -5,13 +5,16 @@
 
 ## Now
 
-- **Shipped v0.1.0, then hardened to v0.1.1.** All four milestones done; CI
-  green incl. the self-gate. An adversarial multi-agent review found 15 real
-  issues (2 high-severity write-safety bugs) — all fixed; write safety is now a
-  checked criterion (SL-9). `speclock check` gates **9/9** on itself.
+- **Shipped v0.1.0 → v0.1.1.** The full `init → plan → check → status` loop with
+  a Vitest adapter; CI green incl. the self-gate (`speclock check` gates 9/9 on
+  itself). An adversarial review fixed 15 findings; write safety is criterion SL-9.
+- **Driving to v1.0.0 (in progress).** Roadmap M5–M9 in PRD §7: Jest + pytest
+  adapters (each with a real `examples/` project gated both directions in CI),
+  JSON output, a reusable GitHub Action, packaging verification, a hardened
+  ≥20-criteria self-gate, and a final adversarial review. One tag per milestone.
 - **Open decision for the maintainer:** npm name `speclock` is taken by an
-  unrelated adjacent tool → registry publish deferred (see PRD §8). Tool is
-  usable today via `npx github:aymandakir-gh/speclock`.
+  unrelated adjacent tool → registry publish deferred (see PRD §8). The package is
+  publish-ready as `speclock-cli`; the maintainer pulls the trigger.
 
 ## Milestones
 
@@ -21,7 +24,12 @@
 | M1 Core | SPEC parser, criteria model, `init`, `plan`, fixtures | ✅ done |
 | M2 check + adapter | resolver, checker, Vitest adapter, `check`, `status`, dogfood green | ✅ done |
 | M3 self-gate + demo | CI self-gate job (live & green), demo tape | ✅ done |
-| M4 Launch polish | README, CONTRIBUTING, adapter docs, CHANGELOG, release | 🚧 finishing |
+| M4 Launch polish | README, CONTRIBUTING, adapter docs, CHANGELOG, release | ✅ done |
+| M5 `v0.2.0` Jest | shared spawn/parse helper, Jest adapter, `examples/jest-demo`, both-dir CI, SL-10 | ⏳ next |
+| M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ⏳ |
+| M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ⏳ |
+| M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ⏳ |
+| M9 `v1.0.0` harden | ≥20 criteria, ≥120 tests, core coverage gate, adversarial review | ⏳ |
 
 ## Done
 
@@ -57,8 +65,10 @@
 - Mapping: `[id]` tag in test names (primary) + explicit `tests:` substrings.
 - `check` is a CI gate: exits non-zero unless every criterion is ✅.
 
-## Next steps
+## Next steps (road to v1.0.0)
 
-1. CI green on a clean checkout (M0).
-2. `init` + `plan` + fixtures (M1).
-3. resolver + checker + Vitest adapter + `check` (M2).
+1. M5 `v0.2.0` — Jest adapter + `examples/jest-demo` + both-direction CI (SL-10).
+2. M6 `v0.3.0` — pytest adapter + `examples/pytest-demo` (+ `vitest-demo`) (SL-11).
+3. M7 `v0.4.0` — `check/status --json` with a stable schema (SL-12/13).
+4. M8 `v0.5.0` — reusable composite Action (dogfooded) + `npm pack` verify.
+5. M9 `v1.0.0` — ≥20 criteria, ≥120 tests, core coverage gate, adversarial review.

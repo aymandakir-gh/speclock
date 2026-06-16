@@ -1,7 +1,7 @@
 # speclock — Product Requirements Document
 
 > Status: living document. Decisions are encoded here and in commits for later review.
-> Last updated: 2026-06-16 (M0 — bootstrap).
+> Last updated: 2026-06-16 (v1.0.0 push — adapters, JSON, Action, packaging).
 
 ## 1. Problem
 
@@ -61,7 +61,7 @@ speclock succeeds if:
 
 ## 5. Scope
 
-### In scope (v1)
+### In scope (the v1.0 release)
 - A single CLI binary: `init`, `plan`, `check`, `status`.
 - A SPEC.md format with a documented, stable convention for acceptance criteria.
 - A YAML lock format (`specs/*.yaml`) that records criteria and their test mappings.
@@ -69,11 +69,19 @@ speclock succeeds if:
   **explicit test-name substrings** listed in the lock (`tests:`). Either works; the
   resolver unions both.
 - A pure, I/O-free core (`src/core`) that is 100% unit-testable.
-- A pluggable test-runner adapter interface, with a **Vitest adapter** shipped first.
+- A pluggable test-runner adapter interface with **three shipped adapters —
+  Vitest, Jest, and pytest** — each proven against a real example project under
+  `examples/` and gated both directions in CI.
+- **Machine-readable JSON output** (`check --json` / `status --json`) with a
+  stable, documented schema, alongside the human TTY view.
+- **A reusable GitHub Action** others drop in to gate PRs on `speclock check`,
+  dogfooded by speclock's own CI.
+- Publish-readiness as the npm package `speclock-cli` (command stays `speclock`),
+  verified via `npm pack` + install-from-tarball.
 - Local-only operation: no telemetry, no network calls.
 
-### Out of scope (v1, see roadmap)
-- Jest / pytest / go test adapters (the interface is designed for them; not shipped).
+### Out of scope (v1.0, see roadmap)
+- `go test` / other adapters beyond Vitest/Jest/pytest (the interface is ready).
 - Auto-writing tests, auto-mapping by heuristic/AI, or modifying user code in any way.
 - A config-file format beyond what `plan` needs (kept minimal on purpose).
 - Watch mode, web UI, hosted dashboards, multi-repo orchestration.
@@ -108,6 +116,41 @@ speclock succeeds if:
   speclock itself, enforced as a CI job. README demo.
 - **M4 — Launch polish.** README (one-liner, before/after, install, demo recording
   instructions, why, roadmap), CONTRIBUTING, adapter-authoring docs.
+
+### Road to v1.0.0 (post-0.1, one tag per milestone)
+
+The 0.1 line proved the loop with one adapter. The 1.0 line makes speclock a
+drop-in CI gate for the three runners most agent-built projects use, with
+machine-readable output and a reusable Action. Each milestone ships under a tag
+with CI green, and each new capability is added **spec-first** (a new `SL-*`
+criterion with a real test) so speclock keeps gating itself.
+
+- **M5 — `v0.2.0` — Jest adapter.** Extract a shared spawn/JSON-report helper;
+  add a Jest adapter (Jest's `--json` report is Jest-compatible with Vitest's, so
+  the pure parser is shared). Prove it with `examples/jest-demo` (a real Jest
+  project) and a CI job asserting **both** directions: `speclock check` exits `0`
+  when mapped tests pass, non-zero when a mapped test is deleted or made to fail.
+  New criterion **SL-10**.
+- **M6 — `v0.3.0` — pytest adapter.** Add a pytest adapter that runs
+  `pytest --junit-xml` and parses JUnit XML with a small pure parser. Prove it
+  with `examples/pytest-demo` (idiomatic Python, mapped via the explicit `tests:`
+  mechanism) and the same both-direction CI gate. Add `examples/vitest-demo` so
+  all three runners have a first-class example. New criterion **SL-11**.
+- **M7 — `v0.4.0` — JSON output.** `check --json` / `status --json` emit a stable,
+  documented JSON object on stdout (diagnostics stay on stderr; exit codes
+  unchanged), for PR bots and tooling. New criteria **SL-12/SL-13**, plus
+  command-level tests via an injectable in-memory adapter.
+- **M8 — `v0.5.0` — reusable Action + packaging.** A composite GitHub Action
+  (`action.yml`) others use as `uses: aymandakir-gh/speclock@v1`, documented with
+  a copy-paste snippet and **dogfooded** by speclock's own self-gate job. Verify
+  publish-readiness with `npm pack` + install-from-tarball (name `speclock-cli`,
+  bin `speclock`). New criteria for the JSON schema stability and packaging
+  invariants.
+- **M9 — `v1.0.0` — harden + review.** Grow the self-spec to **≥20 criteria**
+  (each mapped to ≥1 passing test), **≥120 tests**, enforce `src/core` coverage
+  (≥90% line, ≥80% branch) in CI, run a **multi-agent adversarial review**, fix
+  every real finding with a regression test (record declined ones), and finish
+  launch-grade docs.
 
 ## 8. Key decisions (encoded for review)
 
