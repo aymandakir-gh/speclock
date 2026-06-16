@@ -17,6 +17,27 @@ and fails CI unless every criterion is implemented and tested. It's tooling for
 
 ---
 
+## Demo
+
+<!-- Recorded from demo/speclock.tape with charmbracelet/vhs:
+       vhs demo/speclock.tape   # → demo/speclock.gif
+     then embed it here:
+       ![speclock demo](./demo/speclock.gif) -->
+
+```console
+$ speclock init           # scaffold SPEC.md
+$ $EDITOR SPEC.md         # write acceptance criteria (or let an agent)
+$ speclock plan           # lock them → specs/spec.yaml
+$ speclock status         # every criterion is ❌ until a passing test maps to it
+$ speclock check; echo $? # the gate: non-zero until the spec is satisfied
+…                         # write tests named [AC-1] …, build, and check turns green
+```
+
+A recordable [vhs](https://github.com/charmbracelet/vhs) script lives at
+[`demo/speclock.tape`](./demo/speclock.tape) (`vhs demo/speclock.tape`).
+
+---
+
 ## Spec-first, not vibe-first
 
 **Without speclock** 🫠
@@ -172,6 +193,19 @@ Ran vitest: 103 test(s), 15 criteria in 1 spec file(s).
 
 See [`SPEC.md`](./SPEC.md), the lock at [`specs/spec.yaml`](./specs/spec.yaml),
 and the [`self-gate` CI job](./.github/workflows/ci.yml).
+
+---
+
+## Examples
+
+Three runnable example projects, each gated by speclock in CI both directions
+(`check` passes when mapped tests pass, fails when one is deleted or broken):
+
+| Example | Runner | Mapping |
+|---------|--------|---------|
+| [`examples/vitest-demo`](./examples/vitest-demo) | Vitest | `[VD-1]` tag in test names |
+| [`examples/jest-demo`](./examples/jest-demo) | Jest | `[JD-1]` tag in test names |
+| [`examples/pytest-demo`](./examples/pytest-demo) | pytest | explicit `tests:` substrings (Python names can't carry a `[tag]`) |
 
 ---
 

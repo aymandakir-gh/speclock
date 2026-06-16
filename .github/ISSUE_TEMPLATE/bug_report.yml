@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in speclock behaves incorrectly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the report! A small repro makes fixes much faster.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you run, what did you expect, and what did you get?
+      placeholder: |
+        I ran `speclock check --runner jest` and …
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Steps, and ideally your SPEC.md + specs/*.yaml (or a minimal repo).
+    validations:
+      required: false
+  - type: dropdown
+    id: runner
+    attributes:
+      label: Test runner
+      options: [vitest, jest, pytest, other / not applicable]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: speclock version & Node version
+      placeholder: "speclock 1.0.0, node 20.11.0"
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Paste the command output. `speclock check --json` output is ideal.
+      render: shell

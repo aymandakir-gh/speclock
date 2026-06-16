@@ -47,6 +47,26 @@ describe('parseJUnitXml', () => {
     expect(() => parseJUnitXml('   ')).toThrow(/empty/);
   });
 
+  it('[SL-11] aggregates testcases across multiple <testsuite> elements', () => {
+    const xml = `<testsuites>
+      <testsuite name="a"><testcase classname="ma" name="t1" /></testsuite>
+      <testsuite name="b"><testcase classname="mb" name="t2" /></testsuite>
+    </testsuites>`;
+    const r = parseJUnitXml(xml);
+    expect(r.tests.map((t) => t.name)).toEqual(['ma::t1', 'mb::t2']);
+    expect(r.ok).toBe(true);
+  });
+
+  it('[SL-11] omits duration when there is no time attribute, and parses single-quoted attrs', () => {
+    const r = parseJUnitXml(`<testsuite><testcase classname='m' name='t' /></testsuite>`);
+    expect(r.tests[0]).toEqual({ name: 'm::t', status: 'passed', file: 'm' });
+  });
+
+  it('[SL-11] uses just the name when there is no classname', () => {
+    const r = parseJUnitXml(`<testsuite><testcase name="lonely" time="0.002" /></testsuite>`);
+    expect(r.tests[0]).toEqual({ name: 'lonely', status: 'passed', duration: 2 });
+  });
+
   it('[SL-11] the pytest adapter is registered and selectable by name', () => {
     expect(getAdapter('pytest')).toBe(pytestAdapter);
     expect(adapterNames()).toContain('pytest');

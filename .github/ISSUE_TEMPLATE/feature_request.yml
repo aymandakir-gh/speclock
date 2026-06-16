@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an improvement or a new adapter.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Focus on the use case, not a specific solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed approach (optional)
+      description: If you have one in mind. For a new test runner, see docs/ADAPTERS.md.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This keeps speclock read-only on user source/tests (it only writes SPEC.md / specs/).
+        - label: This stays local-only (no network/telemetry).

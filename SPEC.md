@@ -93,6 +93,38 @@ speclock ships a composite Action (`action.yml`) that others drop into a
 workflow to run `speclock check`, exposing `runner`/`dir`/`working-directory`
 inputs and invoking the built CLI. speclock's own CI dogfoods it.
 
+### SL-16: criteria are aggregated across all lock files in a directory
+
+`check`/`status` read every `*.yaml`/`*.yml` lock in the directory, union their
+criteria, and reject a criterion id that appears in more than one file.
+
+### SL-17: an unknown runner is rejected with the available runners listed
+
+Selecting a `--runner` that has no adapter fails as a usage error (exit 2) with a
+message naming the adapters that are available.
+
+### SL-18: `check` returns honest exit codes
+
+`check` exits `0` when every criterion is tested, `1` when a criterion is
+untested/failing or the suite is red, and `2` for a usage/config error — the
+ambiguous case always resolves to failure, never a false green.
+
+### SL-19: output color is injected and disables cleanly
+
+Human output is colored through an injectable palette, so the same renderers
+produce plain text when color is off (`NO_COLOR`, non-TTY) and ANSI when it's on.
+
+### SL-20: `speclock status` never fails the build
+
+`status` is informational: it reports coverage and always exits `0` on success,
+even when criteria are untested or failing, so it's safe to run anywhere.
+
+### SL-21: the lock file is versioned and schema-validated
+
+A lock is a versioned mapping of criteria; `plan`/`check` reject a malformed lock
+(non-mapping, missing id, duplicate ids, non-string fields) or a version newer
+than this speclock supports, rather than silently misbehaving.
+
 ## Out of Scope
 
 - Adapters beyond Vitest/Jest/pytest (`go test` and others ship later; the

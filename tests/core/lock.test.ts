@@ -79,7 +79,7 @@ describe('mergeLock', () => {
 });
 
 describe('serializeLock / parseLock', () => {
-  it('[SL-3] round-trips a lock through YAML', () => {
+  it('[SL-21] round-trips a lock through YAML', () => {
     const lock: Lock = {
       version: 1,
       spec: 'SPEC.md',
@@ -93,41 +93,46 @@ describe('serializeLock / parseLock', () => {
     expect(parseLock(text)).toEqual(lock);
   });
 
-  it('[SL-3] tolerates a missing tests field (defaults to [])', () => {
+  it('[SL-21] tolerates a missing tests field (defaults to [])', () => {
     const yaml = 'version: 1\nspec: SPEC.md\ncriteria:\n  - id: AC-1\n    description: One\n';
     expect(parseLock(yaml).criteria[0]!.tests).toEqual([]);
   });
 
-  it('[SL-3] rejects a non-mapping top level', () => {
+  it('[SL-21] rejects a non-mapping top level', () => {
     expect(() => parseLock('- a\n- b\n')).toThrow(LockParseError);
   });
 
-  it('[SL-3] rejects a criterion without an id', () => {
+  it('[SL-21] rejects a non-list criteria field', () => {
+    expect(() => parseLock('criteria: nope\n')).toThrow(/`criteria` must be a list/);
+  });
+
+  it('[SL-21] rejects a criterion without an id', () => {
     const yaml = 'criteria:\n  - description: no id here\n';
     expect(() => parseLock(yaml)).toThrow(/missing a string `id`/);
   });
 
-  it('[SL-3] rejects duplicate ids in a lock', () => {
+  it('[SL-21] rejects duplicate ids in a lock', () => {
     const yaml = 'criteria:\n  - id: AC-1\n    description: a\n  - id: AC-1\n    description: b\n';
     expect(() => parseLock(yaml)).toThrow(/Duplicate criterion id/);
   });
 
-  it('[SL-3] rejects non-string tests entries', () => {
+  it('[SL-21] rejects non-string tests entries', () => {
     const yaml = 'criteria:\n  - id: AC-1\n    description: a\n    tests: [1, 2]\n';
     expect(() => parseLock(yaml)).toThrow(/entries must be strings/);
   });
 
-  it('[SL-3] trims a whitespace-padded id so tag matching still works', () => {
+  it('[SL-21] trims a whitespace-padded id so tag matching still works', () => {
     const yaml = 'criteria:\n  - id: "  AC-1  "\n    description: a\n';
     expect(parseLock(yaml).criteria[0]!.id).toBe('AC-1');
   });
 
-  it('[SL-3] rejects a future or non-integer lock version', () => {
+  it('[SL-21] rejects a future, zero, or non-integer lock version', () => {
     expect(() => parseLock('version: 2\ncriteria: []\n')).toThrow(/newer than this speclock/);
     expect(() => parseLock('version: 1.5\ncriteria: []\n')).toThrow(/Invalid lock version/);
+    expect(() => parseLock('version: 0\ncriteria: []\n')).toThrow(/Invalid lock version/);
   });
 
-  it('[SL-3] rejects a non-string description', () => {
+  it('[SL-21] rejects a non-string description', () => {
     const yaml = 'criteria:\n  - id: AC-1\n    description: 42\n';
     expect(() => parseLock(yaml)).toThrow(/`description` must be a string/);
   });

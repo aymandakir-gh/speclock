@@ -19,12 +19,16 @@ Requires Node ≥ 20 and pnpm 9.
 pnpm typecheck       # tsc --noEmit
 pnpm lint            # eslint (flat config)
 pnpm test            # vitest run
+pnpm coverage        # vitest run --coverage (gates src/core: ≥90% line, ≥80% branch)
 pnpm build           # tsc -> dist/
 pnpm check:self      # builds, then runs `speclock check` on speclock itself
 ```
 
-CI runs all of the above on Node 20 & 22, plus the self-gate job. Get it green
-locally before opening a PR.
+CI runs all of the above on Node 20 & 22, plus: a `package` job (`npm pack` +
+install-from-tarball), the per-adapter `examples` jobs (both directions), and the
+self-gate — which runs through speclock's own composite action (`action.yml`).
+To prove an example end-to-end locally: `node scripts/verify-example.mjs
+examples/jest-demo jest`. Get it green locally before opening a PR.
 
 ## How to add a feature (the speclock way)
 
@@ -43,12 +47,19 @@ We dogfood, so features follow the workflow speclock enables:
 ```
 src/
   core/       pure: spec-parser, lock, resolver, checker, formatter, types
-  adapters/   runs test processes: TestRunnerAdapter interface + vitest adapter
+  adapters/   runs test processes: TestRunnerAdapter + vitest/jest/pytest,
+              shared helpers (spawn, run-json, jest-report, junit)
   cli/        thin shell: commander, fs I/O, exit codes, terminal colors
 tests/
   core/ adapters/ cli/   unit + integration tests (tagged with criterion ids)
-  fixtures/              sample projects (excluded from speclock's own suite)
+  fixtures/              mixed sample projects for adapter integration tests
+examples/     vitest-demo / jest-demo / pytest-demo — real projects gated in CI
+scripts/      verify-example.mjs (both-direction proof), verify-package.mjs
+action.yml    the reusable composite GitHub Action (dogfooded by CI)
 ```
+
+`tests/fixtures/**` and `examples/**` are standalone projects, excluded from
+speclock's own Vitest suite.
 
 - **Pure core, thin shell.** If you're tempted to import `node:fs` in `src/core`,
   it belongs in `src/cli`. Lint will stop you.

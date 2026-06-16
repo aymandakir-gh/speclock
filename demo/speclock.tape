@@ -2,7 +2,7 @@
 #
 #   1. Install vhs:            brew install vhs     (or: go install github.com/charmbracelet/vhs@latest)
 #   2. Record the GIF:         vhs demo/speclock.tape
-#   3. Output:                 demo/speclock.gif    (embed it at the top of README.md)
+#   3. Output:                 demo/speclock.gif    (embedded at the top of README.md)
 #
 # The tape runs the real CLI against a throwaway project in /tmp, so it always
 # reflects current behavior. Alternatively, record with asciinema:
@@ -13,7 +13,7 @@ Output demo/speclock.gif
 Set Shell "bash"
 Set FontSize 18
 Set Width 1100
-Set Height 760
+Set Height 820
 Set Padding 18
 Set Theme "Catppuccin Mocha"
 
@@ -28,9 +28,16 @@ Type "# 2. lock the acceptance criteria" Enter
 Type "speclock plan" Enter
 Sleep 3s
 
-Type "# 3. before tests exist, the gate is honest:" Enter
+Type "# 3. before any tests exist, the gate is honest:" Enter
 Type "speclock status" Enter
 Sleep 3s
 
 Type "# every criterion is ❌ until a passing test maps to it." Enter
+Sleep 2s
+
+Type "# 4. so `speclock check` blocks the merge (exit code 1):" Enter
+Type "speclock check; echo \"exit: $?\"" Enter
+Sleep 4s
+
+Type "# write tests named [AC-1] … and check turns green. That's the gate." Enter
 Sleep 2s

@@ -51,3 +51,21 @@ criteria:
   - id: SL-15
     description: a reusable GitHub Action gates a project on `speclock check`
     tests: []
+  - id: SL-16
+    description: criteria are aggregated across all lock files in a directory
+    tests: []
+  - id: SL-17
+    description: an unknown runner is rejected with the available runners listed
+    tests: []
+  - id: SL-18
+    description: "`check` returns honest exit codes"
+    tests: []
+  - id: SL-19
+    description: output color is injected and disables cleanly
+    tests: []
+  - id: SL-20
+    description: "`speclock status` never fails the build"
+    tests: []
+  - id: SL-21
+    description: the lock file is versioned and schema-validated
+    tests: []
