@@ -38,6 +38,12 @@ export async function runJsonReporter(run: JsonReporterRun): Promise<TestRunResu
       throw new AdapterError(`${run.label} timed out after ${run.timeoutMs}ms.`);
     }
     if (!existsSync(outFile)) {
+      // A clean exit with no report means the runner found no tests to run
+      // (e.g. vitest with --passWithNoTests on an empty/zero-match suite). Treat
+      // that as an empty suite — so criteria resolve as untested and `check`
+      // exits 1 — rather than a config error. Only a non-zero exit with no
+      // report is a genuine failure to produce output.
+      if (res.code === 0) return { ok: true, tests: [] };
       const diag = (res.stderr || res.stdout || '').trim();
       throw new AdapterError(
         `${run.label} did not produce a report (exit ${res.code ?? 'null'}).${diag ? `\n${diag}` : ''}`,

@@ -33,10 +33,16 @@ describe('runInit', () => {
     });
   });
 
-  it('[SL-1] overwrites when --force is given', () => {
+  it('[SL-1] overwrites when --force is given (the file is actually rewritten)', () => {
     withTempDir((dir) => {
       runInit({ spec: 'SPEC.md', force: false, cwd: dir });
+      const spec = join(dir, 'SPEC.md');
+      // Sentinel proves a real write happened, not just a 0 return (review #10).
+      writeFileSync(spec, 'SENTINEL — must be replaced\n');
       expect(runInit({ spec: 'SPEC.md', force: true, cwd: dir })).toBe(0);
+      const after = readFileSync(spec, 'utf8');
+      expect(after).not.toContain('SENTINEL');
+      expect(after).toContain('## Acceptance Criteria');
     });
   });
 

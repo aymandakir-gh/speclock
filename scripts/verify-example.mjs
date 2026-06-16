@@ -108,7 +108,9 @@ console.log('\n--- direction 2: a mapped test made to fail → exit non-zero');
 const failPath = join(exampleDir, cfg.failFile);
 try {
   writeFileSync(failPath, cfg.failBody(firstCriterionTag()));
-  expect('made-to-fail: check exits non-zero', check() !== 0);
+  // Must be exactly the gate-failure code (1), not an adapter/config error (2):
+  // a crash that happens to exit non-zero would otherwise pass this hollowly.
+  expect('made-to-fail: check exits 1 (the gate)', check() === 1);
 } finally {
   rmSync(failPath, { force: true });
 }
@@ -124,7 +126,7 @@ try {
     renameSync(f, bak);
     moved.push([f, bak]);
   }
-  expect('deleted: check exits non-zero', check() !== 0);
+  expect('deleted: check exits 1 (criteria untested)', check() === 1);
 } finally {
   for (const [orig, bak] of moved) renameSync(bak, orig);
 }

@@ -112,7 +112,10 @@ function coverageJsonBase(
     tool: 'speclock',
     command,
     runner: meta.runner,
-    ok: report.summary.untested === 0 && report.summary.failing === 0 && run.ok,
+    // Coverage-only verdict (true iff every criterion is tested), matching the
+    // documented `status` semantics. `check` overrides this with its gate result
+    // (`formatCheckJson`), which additionally fails on a red suite.
+    ok: report.summary.untested === 0 && report.summary.failing === 0,
     summary: {
       total: report.summary.total,
       tested: report.summary.tested,

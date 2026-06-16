@@ -115,4 +115,17 @@ describe('pytestAdapter.run (integration)', () => {
     },
     60_000,
   );
+
+  // Regression for review #3: an interrupted run (exit 2) still writes a partial
+  // report whose collected tests passed — that must NOT be reported as green.
+  const interruptDir = fileURLToPath(new URL('../fixtures/sample-pytest-interrupt/', import.meta.url));
+  it.skipIf(!HAS_PYTEST)(
+    'does not report a green suite when pytest is interrupted (exit 2)',
+    async () => {
+      const r = await pytestAdapter.run({ cwd: interruptDir, timeoutMs: 60_000 });
+      expect(r.ok).toBe(false);
+      expect(r.note).toMatch(/abnormally|interrupted/);
+    },
+    60_000,
+  );
 });

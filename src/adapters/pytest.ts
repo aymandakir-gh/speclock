@@ -62,7 +62,19 @@ export const pytestAdapter: TestRunnerAdapter = {
           `pytest did not produce a JUnit report (exit ${res.code ?? 'null'}). Is pytest installed? Set SPECLOCK_PYTEST to override the command.${diag ? `\n${diag}` : ''}`,
         );
       }
-      return parseJUnitXml(readFileSync(outFile, 'utf8'));
+      const result = parseJUnitXml(readFileSync(outFile, 'utf8'));
+      // pytest exit codes: 0 = all passed, 1 = tests failed, 5 = no tests
+      // collected. Anything else (2 = interrupted, 3 = internal error, 4 =
+      // usage, or a signal kill → null) means the run did not complete, and a
+      // partial JUnit report's per-test passes must NOT be trusted as green.
+      if (res.code !== 0 && res.code !== 1 && res.code !== EXIT_NO_TESTS_COLLECTED) {
+        return {
+          ...result,
+          ok: false,
+          note: `pytest exited abnormally (code ${res.code ?? 'null'}); the run was interrupted or errored before completing.`,
+        };
+      }
+      return result;
     } finally {
       try {
         rmSync(outFile, { force: true });

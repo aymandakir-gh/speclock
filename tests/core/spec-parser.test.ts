@@ -94,6 +94,12 @@ describe('parseSpec', () => {
     expect(() => parseSpec(md)).toThrow(/Duplicate criterion id "AC-1"/);
   });
 
+  it('[SL-2] throws on an explicit-id heading with no description (### AC-1:)', () => {
+    // Must NOT silently slugify "AC-1:" into the id `ac-1` (regression: review #2).
+    expect(() => parseSpec('## Acceptance Criteria\n### AC-1:\n')).toThrow(SpecParseError);
+    expect(() => parseSpec('## Acceptance Criteria\n### AC-1:   \n')).toThrow(/no description/);
+  });
+
   it('[SL-2] only reads a leading "token:" as an id, else slugifies the whole heading', () => {
     const md = [
       '## Acceptance Criteria',
@@ -136,6 +142,24 @@ describe('parseSpec fenced-code edge cases', () => {
     ].join('\n');
     const { criteria } = parseSpec(md);
     expect(criteria.map((c) => c.id)).toEqual(['AC-1', 'AC-2']);
+  });
+
+  it('[SL-2] a content line that looks like a fence-with-info-string does not desync (no dropped criterion)', () => {
+    // ```bash inside an open ```ts block is content, not a close (a closing fence
+    // carries no info string). Regression for review #1 — a false-green vector
+    // where a real criterion was dropped and a fenced one fabricated.
+    const md = [
+      '## Acceptance Criteria',
+      '### AC-1: real',
+      '```ts',
+      '### hidden in code',
+      '```bash',
+      '### also-hidden',
+      '```',
+      '### AC-2: real',
+      '',
+    ].join('\n');
+    expect(parseSpec(md).criteria.map((c) => c.id)).toEqual(['AC-1', 'AC-2']);
   });
 
   it('[SL-2] a ~~~ line inside a ``` block is literal content', () => {

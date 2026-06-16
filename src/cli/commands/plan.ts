@@ -3,7 +3,7 @@ import { parseSpec, SpecParseError } from '../../core/spec-parser.js';
 import { mergeLock, parseLock, serializeLock } from '../../core/lock.js';
 import type { Lock } from '../../core/types.js';
 import { fileExists, readText, writeText } from '../io.js';
-import { assertLockPath, UnsafeWriteError } from '../safe-write.js';
+import { assertLockPath, assertWritableTarget, UnsafeWriteError } from '../safe-write.js';
 import { out, err, palette as c } from '../ui.js';
 
 export interface PlanOptions {
@@ -34,6 +34,7 @@ export function runPlan(opts: PlanOptions): number {
   let outPath: string;
   try {
     outPath = assertLockPath(opts.out ?? defaultOutPath(opts.spec), cwd);
+    assertWritableTarget(outPath, cwd, { underSpecs: true });
   } catch (e) {
     if (e instanceof UnsafeWriteError) {
       err(c.red(e.message));

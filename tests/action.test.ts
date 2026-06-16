@@ -6,7 +6,7 @@ import { parse as parseYaml } from 'yaml';
 // Validate the reusable composite Action's contract so the bin path / input
 // wiring can't drift. speclock's CI dogfoods the action (the `self-gate` job).
 interface ActionYml {
-  runs: { using: string; steps: Array<{ run?: string }> };
+  runs: { using: string; steps: Array<{ run?: string; 'working-directory'?: string }> };
   inputs: Record<string, { default?: string }>;
 }
 
@@ -31,5 +31,7 @@ describe('reusable GitHub Action', () => {
     expect(runStep!.run).toContain('check');
     expect(runStep!.run).toContain('inputs.runner');
     expect(runStep!.run).toContain('inputs.dir');
+    // The step must run in the caller's project dir (regression for review #9).
+    expect(runStep!['working-directory']).toBe('${{ inputs.working-directory }}');
   });
 });

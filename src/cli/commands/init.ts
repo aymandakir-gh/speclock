@@ -1,6 +1,6 @@
 import { INIT_NEXT_STEPS, SPEC_TEMPLATE } from '../../core/templates.js';
 import { fileExists, writeText } from '../io.js';
-import { assertSpecPath, UnsafeWriteError } from '../safe-write.js';
+import { assertSpecPath, assertWritableTarget, UnsafeWriteError } from '../safe-write.js';
 import { out, err, palette as c } from '../ui.js';
 
 export interface InitOptions {
@@ -17,6 +17,7 @@ export function runInit(opts: InitOptions): number {
   let target: string;
   try {
     target = assertSpecPath(opts.spec, cwd);
+    assertWritableTarget(target, cwd);
   } catch (e) {
     if (e instanceof UnsafeWriteError) {
       err(c.red(e.message));

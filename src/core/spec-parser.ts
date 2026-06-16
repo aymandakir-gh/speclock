@@ -26,8 +26,14 @@ export class SpecParseError extends Error {
 // ATX heading; a trailing closing `#` run is only stripped when space-preceded
 // (per CommonMark), so descriptions like "Compile C#" are preserved.
 const HEADING_RE = /^(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/;
-const FENCE_RE = /^\s{0,3}(`{3,}|~{3,})/;
+// An opening code fence may carry an info string (```ts). A *closing* fence may
+// not — only trailing spaces/tabs (CommonMark) — so a content line like ```bash
+// inside an open block is NOT a close (which would desync fence tracking).
+const FENCE_OPEN_RE = /^\s{0,3}(`{3,}|~{3,})/;
+const FENCE_CLOSE_RE = /^\s{0,3}(`{3,}|~{3,})[ \t]*$/;
 const EXPLICIT_ID_RE = /^([A-Za-z][A-Za-z0-9._-]*):\s+(.*\S)\s*$/;
+// A heading that is just `id:` with nothing after — author forgot the description.
+const EMPTY_DESC_ID_RE = /^([A-Za-z][A-Za-z0-9._-]*):\s*$/;
 const SECTION_TITLE_RE = /^acceptance\s+criteria$/i;
 
 interface Heading {
@@ -55,24 +61,28 @@ function scanHeadings(markdown: string): Heading[] {
   let fenceLen = 0;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] as string;
-    const fm = FENCE_RE.exec(line);
-    if (fm) {
-      const marker = fm[1]!;
-      const ch = marker[0]!;
-      const len = marker.length;
-      if (!inFence) {
-        inFence = true;
-        fenceChar = ch;
-        fenceLen = len;
-      } else if (ch === fenceChar && len >= fenceLen) {
-        inFence = false;
-        fenceChar = '';
-        fenceLen = 0;
+    if (inFence) {
+      // Inside a block, only a closing fence (no info string) of the same char
+      // and length >= the opener closes it; anything else is literal content.
+      const cm = FENCE_CLOSE_RE.exec(line);
+      if (cm) {
+        const marker = cm[1]!;
+        if (marker[0] === fenceChar && marker.length >= fenceLen) {
+          inFence = false;
+          fenceChar = '';
+          fenceLen = 0;
+        }
       }
-      // else: a non-matching fence line inside a block is literal content.
+      continue; // never read a heading from inside a fence
+    }
+    const om = FENCE_OPEN_RE.exec(line);
+    if (om) {
+      const marker = om[1]!;
+      inFence = true;
+      fenceChar = marker[0]!;
+      fenceLen = marker.length;
       continue;
     }
-    if (inFence) continue;
     const m = HEADING_RE.exec(line);
     if (m) {
       headings.push({ level: m[1]!.length, text: m[2]!.trim(), line: i });
@@ -130,6 +140,15 @@ export function parseSpec(markdown: string): SpecParseResult {
       id = explicit[1]!;
       description = explicit[2]!.trim();
     } else {
+      // `### AC-1:` — an explicit id with an empty description. Reject it rather
+      // than silently slugifying "AC-1:" into the id `ac-1` (which would break
+      // the author's [AC-1] test tags).
+      const emptyDesc = EMPTY_DESC_ID_RE.exec(h.text);
+      if (emptyDesc) {
+        throw new SpecParseError(
+          `Criterion heading on line ${h.line + 1} declares id "${emptyDesc[1]}" but has no description. Write "### ${emptyDesc[1]}: <description>".`,
+        );
+      }
       description = h.text.trim();
       id = slugify(description);
       autoIdCount++;

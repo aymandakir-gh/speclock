@@ -68,6 +68,15 @@ describe('formatStatusJson', () => {
     expect(json.ok).toBe(false);
     expect(json.summary).toEqual({ total: 2, tested: 1, failing: 0, untested: 1 });
   });
+
+  it('[SL-13] ok reflects coverage only — true when all criteria tested even if the suite is red', () => {
+    // Regression for review #6: status `ok` must NOT fold in suite-level run.ok.
+    const r = run([t('[AC-1] a', 'passed'), t('unrelated rogue', 'failed')], false);
+    const report = resolveCoverage([crit('AC-1')], r);
+    const json = JSON.parse(formatStatusJson(report, r, { runner: 'vitest' }));
+    expect(json.suite.ok).toBe(false); // the suite is red…
+    expect(json.ok).toBe(true); // …but every criterion is tested, per the docs
+  });
 });
 
 describe('formatJsonError', () => {

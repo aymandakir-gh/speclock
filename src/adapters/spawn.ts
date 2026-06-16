@@ -73,7 +73,11 @@ export function spawnProcess(
         cwd: opts.cwd,
         env: process.env,
         stdio: ['ignore', 'pipe', 'pipe'],
-        // Own process group so a timeout can kill worker processes too.
+        // On Windows the runner is a `.cmd` shim (e.g. vitest.cmd); since Node's
+        // CVE-2024-27980 fix, spawning a .cmd path without a shell throws EINVAL,
+        // so a shell is required there. On POSIX we avoid the shell and use our
+        // own process group so a timeout can kill worker processes too.
+        shell: process.platform === 'win32',
         detached: process.platform !== 'win32',
       });
     } catch (e) {
