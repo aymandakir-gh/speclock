@@ -28,7 +28,7 @@
 | M5 `v0.2.0` Jest | shared spawn/parse helper, Jest adapter, `examples/jest-demo`, both-dir CI, SL-10 | ✅ done |
 | M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ✅ done |
 | M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ✅ done |
-| M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ⏳ |
+| M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ✅ done |
 | M9 `v1.0.0` harden | ≥20 criteria, ≥120 tests, core coverage gate, adversarial review | ⏳ |
 
 ## Done
@@ -73,6 +73,10 @@
   JSON object on stdout (diagnostics on stderr, exit codes unchanged); pure
   formatters in `src/core`, command-level tests via an injectable in-memory
   adapter. SL-12/13 added; gates **13/13**; 98 tests. Schema in `docs/JSON.md`.
+- **M8 `v0.5.0`:** reusable composite Action (`action.yml`) — the self-gate CI
+  job now runs through it (dogfood); `scripts/verify-package.mjs` + a CI
+  `package` job pack/install/run the tarball (publish-ready as `speclock-cli`).
+  SL-14/15 added; gates **15/15**; 103 tests.
 
 ## Key decisions (see PRD §8)
 

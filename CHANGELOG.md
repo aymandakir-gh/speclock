@@ -4,6 +4,23 @@ All notable changes to speclock are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims to follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-06-16
+
+A drop-in CI gate, and proof speclock is publish-ready.
+
+### Added
+
+- **Reusable composite GitHub Action** (`action.yml`): others gate PRs with
+  `- uses: aymandakir-gh/speclock@v1` (inputs `runner`/`dir`/`working-directory`/
+  `json`). speclock's own CI **dogfoods** it — the self-gate job now runs through
+  the action. Copy-paste snippet in the README.
+- **Packaging verification** (`scripts/verify-package.mjs` + a CI `package` job):
+  `npm pack`, install the tarball into a throwaway project, and run the
+  `speclock` bin — proving publish-readiness as `speclock-cli` without
+  publishing.
+- New self-criteria **SL-14** (publish config) and **SL-15** (the Action);
+  `speclock check` gates **15/15** on itself. 103 tests.
+
 ## [0.4.0] — 2026-06-16
 
 Machine-readable output for tooling and PR bots.
@@ -129,6 +146,7 @@ gating itself in CI.
   taken by an unrelated project; this package is `speclock-cli` (command:
   `speclock`). Registry publish is pending a naming decision — see `PRD.md` §8.
 
+[0.5.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.5.0
 [0.4.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.4.0
 [0.3.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.3.0
 [0.2.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.2.0

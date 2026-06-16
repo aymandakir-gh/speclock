@@ -88,10 +88,10 @@ jobs:
       - name: Verify ${{ matrix.runner }} adapter (both directions)
         run: node scripts/verify-example.mjs ${{ matrix.dir }} ${{ matrix.runner }}
 
-  # The ultimate proof: speclock gates itself on its own spec. Builds speclock,
-  # then runs `speclock check` against speclock's own SPEC.md + specs/spec.yaml.
-  self-gate:
-    name: speclock checks speclock
+  # Prove speclock is publish-ready: `npm pack`, install the tarball into a
+  # throwaway project, and run the `speclock` bin from it. Does not publish.
+  package:
+    name: package (pack + install)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -108,8 +108,19 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Verify package (pack + install + run from tarball)
+        run: node scripts/verify-package.mjs
 
-      - name: speclock check (self-gating)
-        run: node dist/cli/index.js check
+  # The ultimate proof: speclock gates itself on its own spec — AND it does it
+  # through speclock's own reusable composite action (dogfooding the action). The
+  # action builds speclock and installs deps (incl. vitest) in the checkout, then
+  # runs `speclock check` against this repo's SPEC.md + specs/spec.yaml.
+  self-gate:
+    name: speclock checks speclock (via the action)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./
+        with:
+          runner: vitest

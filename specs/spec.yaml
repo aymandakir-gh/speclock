@@ -45,3 +45,9 @@ criteria:
   - id: SL-13
     description: "`speclock status --json` emits a machine-readable report"
     tests: []
+  - id: SL-14
+    description: speclock is publish-ready as `speclock-cli`
+    tests: []
+  - id: SL-15
+    description: a reusable GitHub Action gates a project on `speclock check`
+    tests: []

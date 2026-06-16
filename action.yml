@@ -1,0 +1,57 @@
+name: 'speclock check'
+description: 'Gate a PR on speclock — every acceptance criterion must map to a passing test.'
+author: 'speclock contributors'
+branding:
+  icon: 'check-square'
+  color: 'green'
+
+inputs:
+  runner:
+    description: 'Test-runner adapter to use (vitest | jest | pytest | …).'
+    required: false
+    default: 'vitest'
+  dir:
+    description: 'Directory containing speclock lock files.'
+    required: false
+    default: 'specs'
+  working-directory:
+    description: 'Directory to run `speclock check` in (your project root).'
+    required: false
+    default: '.'
+  json:
+    description: 'Emit a machine-readable JSON report on stdout.'
+    required: false
+    default: 'false'
+  node-version:
+    description: 'Node version used to build speclock.'
+    required: false
+    default: '20'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    # speclock is built from the action's own checkout (dist/ isn't committed).
+    # Your project — and its test runner — must already be installed in the
+    # working directory before this action runs.
+    - name: Build speclock
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        corepack enable
+        pnpm install --frozen-lockfile
+        pnpm build
+
+    - name: Run speclock check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        SPECLOCK_JSON: ${{ inputs.json }}
+      run: |
+        args=(check --runner "${{ inputs.runner }}" --dir "${{ inputs.dir }}")
+        if [ "$SPECLOCK_JSON" = "true" ]; then args+=(--json); fi
+        node "$GITHUB_ACTION_PATH/dist/cli/index.js" "${args[@]}"

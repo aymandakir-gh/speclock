@@ -81,6 +81,18 @@ diagnostics stay on stderr and the exit code is unchanged.
 With `--json`, `status` prints one JSON object on stdout with the same coverage
 schema (no gate verdict), for PR bots and tooling.
 
+### SL-14: speclock is publish-ready as `speclock-cli`
+
+The package publishes under the name `speclock-cli` with a `speclock` bin, ships
+`dist`, declares a semver version and a Node engine, and builds via the
+`prepare`/`prepublishOnly` hooks — so `npm pack` + install runs the CLI.
+
+### SL-15: a reusable GitHub Action gates a project on `speclock check`
+
+speclock ships a composite Action (`action.yml`) that others drop into a
+workflow to run `speclock check`, exposing `runner`/`dir`/`working-directory`
+inputs and invoking the built CLI. speclock's own CI dogfoods it.
+
 ## Out of Scope
 
 - Adapters beyond Vitest/Jest/pytest (`go test` and others ship later; the

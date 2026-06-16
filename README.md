@@ -148,7 +148,7 @@ CI gates speclock on them. Real output from this repo:
 
 ```
 $ speclock check
-Ran vitest: 98 test(s), 13 criteria in 1 spec file(s).
+Ran vitest: 103 test(s), 15 criteria in 1 spec file(s).
 ✅ SL-1   `speclock init` scaffolds a SPEC.md template (3 tests)
 ✅ SL-2   speclock parses a SPEC.md into acceptance criteria (15 tests)
 ✅ SL-3   `speclock plan` locks criteria into specs/*.yaml (16 tests)
@@ -162,10 +162,12 @@ Ran vitest: 98 test(s), 13 criteria in 1 spec file(s).
 ✅ SL-11  a pytest adapter runs the suite (8 tests)
 ✅ SL-12  `speclock check --json` emits a machine-readable report (7 tests)
 ✅ SL-13  `speclock status --json` emits a machine-readable report (2 tests)
+✅ SL-14  speclock is publish-ready as `speclock-cli` (3 tests)
+✅ SL-15  a reusable GitHub Action gates a project on `speclock check` (2 tests)
 
-13 criteria  ·  13 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
+15 criteria  ·  15 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
 
-✓ All 13 criteria are implemented and tested.
+✓ All 15 criteria are implemented and tested.
 ```
 
 See [`SPEC.md`](./SPEC.md), the lock at [`specs/spec.yaml`](./specs/spec.yaml),
@@ -216,6 +218,40 @@ per-criterion shape, and the error form — in [docs/JSON.md](./docs/JSON.md).
 
 ---
 
+## Gate your PRs in CI
+
+Drop the reusable composite action into a workflow to fail PRs whose spec isn't
+fully tested. Check out your project and install its deps (including the test
+runner) first, then:
+
+```yaml
+# .github/workflows/speclock.yml
+name: speclock
+on: [pull_request]
+jobs:
+  spec-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci              # install YOUR project + its test runner
+      - uses: aymandakir-gh/speclock@v1
+        with:
+          runner: vitest         # vitest | jest | pytest
+          # dir: specs           # where your lock files live (default: specs)
+          # working-directory: . # your project root (default: .)
+```
+
+`speclock`'s own CI [dogfoods this action](./.github/workflows/ci.yml) to gate
+itself. Prefer not to use the action? Any step works — it's just a CLI:
+
+```yaml
+      - run: npx github:aymandakir-gh/speclock check --runner vitest
+```
+
+---
+
 ## Why it matters
 
 The bottleneck of agentic development is no longer typing speed — it's
@@ -243,7 +279,7 @@ source and tests — the only files it ever writes are `SPEC.md` (`init`) and
 - [x] **Vitest, Jest, and pytest** adapters (each with a real example, gated both ways in CI)
 - [x] speclock gates itself in CI
 - [x] `speclock check --json` / `status --json` for tooling/PR bots
-- [ ] Reusable GitHub Action
+- [x] Reusable GitHub Action (dogfooded in this repo's CI)
 - [ ] `go test` adapter
 - [ ] Publish to npm registry (pending the naming decision above)
 
