@@ -1,6 +1,6 @@
 {
   "name": "speclock-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Lock the spec, gate the merge. Spec-driven development for the agentic era. (The CLI command is `speclock`.)",
   "type": "module",
   "bin": {

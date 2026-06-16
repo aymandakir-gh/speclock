@@ -1,8 +1,9 @@
 # Writing a test-runner adapter
 
 speclock doesn't run tests itself — it asks an **adapter** to run your suite and
-hand back a normalized result. **Vitest and Jest ship today**; this guide shows
-how to add another runner (pytest, `go test`, …).
+hand back a normalized result. **Vitest, Jest, and pytest ship today** (each with
+a runnable project under [`examples/`](../examples)); this guide shows how to add
+another runner (`go test`, …).
 
 ## The contract
 

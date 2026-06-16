@@ -148,7 +148,7 @@ CI gates speclock on them. Real output from this repo:
 
 ```
 $ speclock check
-Ran vitest: 80 test(s), 10 criteria in 1 spec file(s).
+Ran vitest: 89 test(s), 11 criteria in 1 spec file(s).
 ✅ SL-1   `speclock init` scaffolds a SPEC.md template (3 tests)
 ✅ SL-2   speclock parses a SPEC.md into acceptance criteria (15 tests)
 ✅ SL-3   `speclock plan` locks criteria into specs/*.yaml (16 tests)
@@ -159,10 +159,11 @@ Ran vitest: 80 test(s), 10 criteria in 1 spec file(s).
 ✅ SL-8   the core is pure (3 tests)
 ✅ SL-9   speclock only writes spec and lock files (10 tests)
 ✅ SL-10  a Jest adapter runs the suite (6 tests)
+✅ SL-11  a pytest adapter runs the suite (8 tests)
 
-10 criteria  ·  10 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
+11 criteria  ·  11 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
 
-✓ All 10 criteria are implemented and tested.
+✓ All 11 criteria are implemented and tested.
 ```
 
 See [`SPEC.md`](./SPEC.md), the lock at [`specs/spec.yaml`](./specs/spec.yaml),
@@ -188,9 +189,9 @@ and the [`self-gate` CI job](./.github/workflows/ci.yml).
 **Architecture.** The core (`src/core`) is pure — SPEC parser, criteria model,
 resolver, checker, formatter — with zero filesystem/process I/O, so it's 100%
 unit-testable (and a meta-test enforces the purity). The CLI is a thin shell.
-Running the test suite is delegated to a **pluggable adapter**; **Vitest and
-Jest** ship today (pick with `--runner`). See
-[docs/ADAPTERS.md](./docs/ADAPTERS.md) to add pytest, `go test`, or others.
+Running the test suite is delegated to a **pluggable adapter**; **Vitest, Jest,
+and pytest** ship today (pick with `--runner`). See
+[docs/ADAPTERS.md](./docs/ADAPTERS.md) to add `go test` or others.
 
 ---
 
@@ -218,9 +219,8 @@ source and tests — the only files it ever writes are `SPEC.md` (`init`) and
 ## Roadmap
 
 - [x] `init`, `plan`, `check`, `status`
-- [x] Vitest **and Jest** adapters (each with a real example, gated both ways in CI)
+- [x] **Vitest, Jest, and pytest** adapters (each with a real example, gated both ways in CI)
 - [x] speclock gates itself in CI
-- [ ] pytest adapter
 - [ ] `speclock check --json` for tooling/PR bots
 - [ ] Reusable GitHub Action
 - [ ] `go test` adapter

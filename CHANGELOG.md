@@ -4,6 +4,28 @@ All notable changes to speclock are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims to follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] — 2026-06-16
+
+Third adapter — speclock now gates the three runners agent-built projects use most.
+
+### Added
+
+- **pytest adapter** (`speclock check --runner pytest`). Runs
+  `pytest --junit-xml` and parses the JUnit XML with a small, dependency-free
+  pure parser (`src/adapters/junit.ts`). Override the launcher with the
+  `SPECLOCK_PYTEST` env var (e.g. `python -m pytest`).
+- **`examples/pytest-demo`** — a real pytest project, mapped via the explicit
+  `tests:` substrings (Python names can't carry a `[PY-1]` tag), and
+  **`examples/vitest-demo`** — so all three shipped runners have a first-class,
+  CI-verified example project.
+- New self-criterion **SL-11** (the pytest adapter); `speclock check` gates
+  **11/11** on itself. 89 tests.
+
+### Changed
+
+- CI's `examples` job now proves all three adapters (Vitest, Jest, pytest) both
+  directions against their `examples/` projects, setting up Python for pytest.
+
 ## [0.2.0] — 2026-06-16
 
 Second adapter and the start of the road to 1.0.
@@ -85,6 +107,7 @@ gating itself in CI.
   taken by an unrelated project; this package is `speclock-cli` (command:
   `speclock`). Registry publish is pending a naming decision — see `PRD.md` §8.
 
+[0.3.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.3.0
 [0.2.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.2.0
 [0.1.1]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.1.1
 [0.1.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.1.0

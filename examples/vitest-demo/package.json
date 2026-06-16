@@ -1,0 +1,14 @@
+{
+  "name": "speclock-vitest-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Example project: speclock gating a real Vitest suite.",
+  "scripts": {
+    "test": "vitest run",
+    "check": "speclock check --runner vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  }
+}

@@ -64,6 +64,12 @@ The Jest adapter runs `jest --json` and normalizes its (Jest-compatible) report
 into the same runner-agnostic pass/fail/skip result, sharing the pure parser
 with the Vitest adapter. Selected with `speclock check --runner jest`.
 
+### SL-11: a pytest adapter runs the suite
+
+The pytest adapter runs `pytest --junit-xml` and parses the JUnit XML into the
+same runner-agnostic pass/fail/skip result with a small pure parser. Selected
+with `speclock check --runner pytest`.
+
 ## Out of Scope
 
 - Adapters beyond Vitest/Jest/pytest (`go test` and others ship later; the

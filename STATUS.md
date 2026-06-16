@@ -26,7 +26,7 @@
 | M3 self-gate + demo | CI self-gate job (live & green), demo tape | ✅ done |
 | M4 Launch polish | README, CONTRIBUTING, adapter docs, CHANGELOG, release | ✅ done |
 | M5 `v0.2.0` Jest | shared spawn/parse helper, Jest adapter, `examples/jest-demo`, both-dir CI, SL-10 | ✅ done |
-| M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ⏳ |
+| M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ✅ done |
 | M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ⏳ |
 | M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ⏳ |
 | M9 `v1.0.0` harden | ≥20 criteria, ≥120 tests, core coverage gate, adversarial review | ⏳ |
@@ -65,6 +65,10 @@
   Adapter internals refactored into shared `spawn.ts` / `run-json.ts` /
   `jest-report.ts`. SL-10 added; `speclock check` gates **10/10** on itself; 80
   tests passing.
+- **M6 `v0.3.0`:** pytest adapter via `pytest --junit-xml` + a dependency-free
+  pure JUnit parser (`src/adapters/junit.ts`); `examples/pytest-demo` (explicit
+  `tests:` mapping) and `examples/vitest-demo`, so all three runners have a real,
+  CI-verified example. SL-11 added; gates **11/11**; 89 tests.
 
 ## Key decisions (see PRD §8)
 

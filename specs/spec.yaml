@@ -36,3 +36,6 @@ criteria:
   - id: SL-10
     description: a Jest adapter runs the suite
     tests: []
+  - id: SL-11
+    description: a pytest adapter runs the suite
+    tests: []
