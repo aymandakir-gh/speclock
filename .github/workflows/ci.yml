@@ -43,6 +43,29 @@ jobs:
 
       - name: Build
         run: pnpm build
-  # NOTE: a `self-gate` job that runs `speclock check` on speclock itself is
-  # added in M3, once the `check` command and speclock's own SPEC.md + specs/
-  # exist. Adding it earlier would make the first CI run red on purpose.
+
+  # The ultimate proof: speclock gates itself on its own spec. Builds speclock,
+  # then runs `speclock check` against speclock's own SPEC.md + specs/spec.yaml.
+  self-gate:
+    name: speclock checks speclock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: speclock check (self-gating)
+        run: node dist/cli/index.js check

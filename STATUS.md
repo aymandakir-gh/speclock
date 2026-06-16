@@ -5,7 +5,9 @@
 
 ## Now
 
-- **M2 check + adapter** — next. M0 + M1 landed; CI green on a clean checkout.
+- **M2 + status landed.** `speclock check` passes on speclock itself (8/8 ✅).
+  `status` shipped early to keep the self-check whole. M3 is now just the CI
+  self-gate job + README demo + release tagging.
 
 ## Milestones
 
@@ -13,8 +15,8 @@
 |-----------|-------|-------|
 | M0 Bootstrap | PRD, scaffold, configs, CI, repo, green baseline | ✅ done |
 | M1 Core | SPEC parser, criteria model, `init`, `plan`, fixtures | ✅ done |
-| M2 check + adapter | resolver, checker, Vitest adapter, `check`, dogfood begins | 🚧 next |
-| M3 status + self-gate | `status`, `speclock check` green on speclock, CI self-gate | ⬜ |
+| M2 check + adapter | resolver, checker, Vitest adapter, `check`, `status`, dogfood green | ✅ done |
+| M3 self-gate + demo | CI self-gate job (live), README demo, release tag | 🚧 next |
 | M4 Launch polish | README, CONTRIBUTING, adapter docs, release | ⬜ |
 
 ## Done
@@ -35,6 +37,14 @@
   refuses to clobber without --force; plan locks criteria, preserves hand-added
   test mappings on re-plan, updates reworded criteria, and drops removed ones.
   Fixture in `tests/fixtures/sample-spec-project/`. 23 tests passing.
+- **M2:** `src/core/resolver.ts` (criteria→tests by tag/substring),
+  `src/core/checker.ts` (honest gate), `src/core/formatter.ts` (coverage map),
+  `src/adapters/{types,vitest,index}.ts` (adapter interface + Vitest adapter with
+  pure `parseVitestReport` + real spawn), `src/cli/{specs,coverage}.ts`,
+  `check` + `status` commands. Vitest adapter integration test runs a real suite
+  against `tests/fixtures/sample-vitest-project/`. **`speclock check` is green on
+  speclock: 8/8 criteria ✅.** Verified the negative path (untested criterion →
+  exit 1). 54 tests passing. CI self-gate job enabled.
 
 ## Key decisions (see PRD §8)
 

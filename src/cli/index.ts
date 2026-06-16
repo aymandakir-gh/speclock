@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { runInit } from './commands/init.js';
 import { runPlan } from './commands/plan.js';
+import { runCheckCommand } from './commands/check.js';
+import { runStatusCommand } from './commands/status.js';
 import { err } from './ui.js';
 
 function readVersion(): string {
@@ -46,14 +48,32 @@ program
     process.exitCode = runPlan({ spec: opts.spec, out: opts.out });
   });
 
+program
+  .command('check')
+  .description('Run the suite and fail unless every criterion maps to a passing test')
+  .option('-d, --dir <path>', 'directory of lock files', 'specs')
+  .option('-r, --runner <name>', 'test-runner adapter', 'vitest')
+  .action(async (opts: { dir: string; runner: string }) => {
+    process.exitCode = await runCheckCommand({ dir: opts.dir, runner: opts.runner });
+  });
+
+program
+  .command('status')
+  .description('Print a coverage map of criteria (does not fail the build)')
+  .option('-d, --dir <path>', 'directory of lock files', 'specs')
+  .option('-r, --runner <name>', 'test-runner adapter', 'vitest')
+  .action(async (opts: { dir: string; runner: string }) => {
+    process.exitCode = await runStatusCommand({ dir: opts.dir, runner: opts.runner });
+  });
+
 program.addHelpText(
   'after',
   `
 Workflow:
   speclock init     scaffold SPEC.md
   speclock plan     lock criteria into specs/*.yaml
-  speclock check    gate: every criterion must map to a passing test (coming in M2)
-  speclock status   coverage map of criteria (coming in M3)
+  speclock check    gate: every criterion must map to a passing test
+  speclock status   coverage map of criteria
 
 Docs: https://github.com/aymandakir-gh/speclock`,
 );
