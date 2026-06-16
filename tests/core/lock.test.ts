@@ -116,4 +116,19 @@ describe('serializeLock / parseLock', () => {
     const yaml = 'criteria:\n  - id: AC-1\n    description: a\n    tests: [1, 2]\n';
     expect(() => parseLock(yaml)).toThrow(/entries must be strings/);
   });
+
+  it('[SL-3] trims a whitespace-padded id so tag matching still works', () => {
+    const yaml = 'criteria:\n  - id: "  AC-1  "\n    description: a\n';
+    expect(parseLock(yaml).criteria[0]!.id).toBe('AC-1');
+  });
+
+  it('[SL-3] rejects a future or non-integer lock version', () => {
+    expect(() => parseLock('version: 2\ncriteria: []\n')).toThrow(/newer than this speclock/);
+    expect(() => parseLock('version: 1.5\ncriteria: []\n')).toThrow(/Invalid lock version/);
+  });
+
+  it('[SL-3] rejects a non-string description', () => {
+    const yaml = 'criteria:\n  - id: AC-1\n    description: 42\n';
+    expect(() => parseLock(yaml)).toThrow(/`description` must be a string/);
+  });
 });

@@ -42,6 +42,25 @@ describe('parseVitestReport', () => {
   it('[SL-6] throws AdapterError on a non-object report', () => {
     expect(() => parseVitestReport(null)).toThrow(AdapterError);
   });
+
+  it('[SL-6] surfaces a file that failed to load as a failing test + note', () => {
+    const r = parseVitestReport({
+      success: false,
+      testResults: [
+        {
+          name: '/proj/broken.test.ts',
+          status: 'failed',
+          message: 'Failed to load url ./missing.js\nDoes the file exist?',
+          assertionResults: [],
+        },
+      ],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.tests).toHaveLength(1);
+    expect(r.tests[0]!.status).toBe('failed');
+    expect(r.tests[0]!.name).toContain('broken.test.ts');
+    expect(r.note).toContain('Failed to load url');
+  });
 });
 
 describe('vitestAdapter.run (integration)', () => {

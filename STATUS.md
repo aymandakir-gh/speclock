@@ -5,8 +5,10 @@
 
 ## Now
 
-- **M4 Launch polish** — finishing. README/CONTRIBUTING/adapter docs/CHANGELOG +
-  demo tape written; tagging v0.1.0 and cutting a GitHub release.
+- **Shipped v0.1.0, then hardened to v0.1.1.** All four milestones done; CI
+  green incl. the self-gate. An adversarial multi-agent review found 15 real
+  issues (2 high-severity write-safety bugs) — all fixed; write safety is now a
+  checked criterion (SL-9). `speclock check` gates **9/9** on itself.
 - **Open decision for the maintainer:** npm name `speclock` is taken by an
   unrelated adjacent tool → registry publish deferred (see PRD §8). Tool is
   usable today via `npx github:aymandakir-gh/speclock`.

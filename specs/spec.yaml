@@ -30,3 +30,6 @@ criteria:
   - id: SL-8
     description: the core is pure
     tests: []
+  - id: SL-9
+    description: speclock only writes spec and lock files
+    tests: []

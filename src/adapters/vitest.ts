@@ -39,6 +39,11 @@ function normalizeStatus(status: unknown): TestStatus {
   return 'skipped';
 }
 
+function firstLine(s: string): string {
+  const line = (s.split('\n')[0] ?? '').trim();
+  return line.length > 200 ? `${line.slice(0, 197)}…` : line;
+}
+
 /** Normalize a Vitest JSON report into a TestRunResult. Pure. */
 export function parseVitestReport(report: unknown): TestRunResult {
   const root = asRecord(report);
@@ -47,10 +52,12 @@ export function parseVitestReport(report: unknown): TestRunResult {
   }
 
   const tests: TestCaseResult[] = [];
+  const loadFailures: string[] = [];
   for (const fileRaw of asArray(root.testResults)) {
     const file = asRecord(fileRaw);
     if (!file) continue;
     const filePath = asString(file.name);
+    const before = tests.length;
     for (const aRaw of asArray(file.assertionResults)) {
       const a = asRecord(aRaw);
       if (!a) continue;
@@ -66,6 +73,17 @@ export function parseVitestReport(report: unknown): TestRunResult {
       if (duration != null) test.duration = duration;
       tests.push(test);
     }
+    // A file that failed to load/collect reports zero assertions but a failed
+    // status and a message. Surface it as a failing test + diagnostic note so
+    // the real cause (import/compile error) isn't silently swallowed.
+    if (tests.length === before && asString(file.status) === 'failed') {
+      const label = filePath ? `${filePath} (failed to load)` : 'a test file (failed to load)';
+      const synth: TestCaseResult = { name: label, status: 'failed' };
+      if (filePath) synth.file = filePath;
+      tests.push(synth);
+      const msg = asString(file.message);
+      if (msg && msg.trim()) loadFailures.push(msg.trim());
+    }
   }
 
   const anyFailed = tests.some((t) => t.status === 'failed');
@@ -73,7 +91,9 @@ export function parseVitestReport(report: unknown): TestRunResult {
   const ok = success != null ? success && !anyFailed : !anyFailed;
 
   const result: TestRunResult = { ok, tests };
-  if (!ok && tests.length === 0) {
+  if (loadFailures.length > 0) {
+    result.note = `a test file failed to load: ${firstLine(loadFailures[0]!)}`;
+  } else if (!ok && tests.length === 0) {
     result.note = 'no tests were reported';
   }
   return result;
@@ -99,6 +119,29 @@ interface SpawnResult {
   timedOut: boolean;
 }
 
+/** Kill the runner and its whole process group (a hung test can spawn workers). */
+function killTree(child: ReturnType<typeof spawn>): void {
+  if (child.pid == null) return;
+  if (process.platform === 'win32') {
+    try {
+      spawn('taskkill', ['/pid', String(child.pid), '/T', '/F']);
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+  try {
+    // Negative pid targets the detached process group, killing orphaned workers.
+    process.kill(-child.pid, 'SIGKILL');
+  } catch {
+    try {
+      child.kill('SIGKILL');
+    } catch {
+      /* already gone */
+    }
+  }
+}
+
 function spawnVitest(
   bin: string,
   args: string[],
@@ -106,32 +149,52 @@ function spawnVitest(
   timeoutMs: number,
 ): Promise<SpawnResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, args, {
-      cwd,
-      env: process.env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    let child: ReturnType<typeof spawn>;
+    try {
+      child = spawn(bin, args, {
+        cwd,
+        env: process.env,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        // Own process group so a timeout can kill worker processes too.
+        detached: process.platform !== 'win32',
+      });
+    } catch (e) {
+      reject(new AdapterError(`Failed to start vitest: ${e instanceof Error ? e.message : String(e)}`));
+      return;
+    }
+
     let stdout = '';
     let stderr = '';
     let timedOut = false;
+    let settled = false;
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill('SIGKILL');
+      killTree(child);
     }, timeoutMs);
-    child.stdout.on('data', (d: Buffer) => {
-      stdout += d.toString();
-    });
-    child.stderr.on('data', (d: Buffer) => {
-      stderr += d.toString();
-    });
-    child.on('error', (e: Error) => {
+    const settle = (fn: () => void): void => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
-      reject(new AdapterError(`Failed to start vitest: ${e.message}`));
+      fn();
+    };
+
+    // setEncoding makes Node buffer partial multibyte sequences across chunks.
+    child.stdout?.setEncoding('utf8');
+    child.stderr?.setEncoding('utf8');
+    child.stdout?.on('data', (d: string) => {
+      stdout += d;
     });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      resolve({ code, stdout, stderr, timedOut });
+    child.stderr?.on('data', (d: string) => {
+      stderr += d;
     });
+    // Prevent an unhandled stream 'error' from crashing the process; output is
+    // best-effort and only used for diagnostics.
+    child.stdout?.on('error', () => {});
+    child.stderr?.on('error', () => {});
+    child.on('error', (e: Error) =>
+      settle(() => reject(new AdapterError(`Failed to start vitest: ${e.message}`))),
+    );
+    child.on('close', (code) => settle(() => resolve({ code, stdout, stderr, timedOut })));
   });
 }
 

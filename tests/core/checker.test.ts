@@ -39,4 +39,13 @@ describe('check', () => {
     expect(check(resolveCoverage([], run([], true)), run([], true)).suiteOk).toBe(true);
     expect(check(resolveCoverage([], run([], false)), run([], false)).suiteOk).toBe(false);
   });
+
+  it('[SL-5] never fails the gate with an empty problems list', () => {
+    // Red suite, but the only mapped test passed and there are no failed tests
+    // and no note (e.g. a suite-level error). Must still explain itself.
+    const tests = [t('[AC-1] a', 'passed')];
+    const res = check(resolveCoverage([crit('AC-1')], run(tests, false)), run(tests, false));
+    expect(res.ok).toBe(false);
+    expect(res.problems.length).toBeGreaterThan(0);
+  });
 });

@@ -42,5 +42,11 @@ export function check(report: CoverageReport, run: TestRunResult): CheckResult {
   const ok =
     report.summary.untested === 0 && report.summary.failing === 0 && run.ok;
 
+  // Never fail the gate without saying why (e.g. a suite-level error with no
+  // per-test detail and no note).
+  if (!ok && problems.length === 0) {
+    problems.push('The test suite reported a failure with no per-test detail.');
+  }
+
   return { ok, report, suiteOk: run.ok, problems };
 }

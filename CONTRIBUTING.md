@@ -20,7 +20,7 @@ pnpm typecheck       # tsc --noEmit
 pnpm lint            # eslint (flat config)
 pnpm test            # vitest run
 pnpm build           # tsc -> dist/
-pnpm check:self      # build, then `speclock check` on speclock itself
+pnpm check:self      # builds, then runs `speclock check` on speclock itself
 ```
 
 CI runs all of the above on Node 20 & 22, plus the self-gate job. Get it green

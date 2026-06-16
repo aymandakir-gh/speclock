@@ -131,7 +131,18 @@ export function parseLock(text: string): Lock {
   }
   const obj = raw as Record<string, unknown>;
 
-  const version = typeof obj.version === 'number' ? obj.version : LOCK_VERSION;
+  let version = LOCK_VERSION;
+  if (obj.version != null) {
+    if (typeof obj.version !== 'number' || !Number.isInteger(obj.version) || obj.version < 1) {
+      throw new LockParseError(`Invalid lock version: ${String(obj.version)} (expected a positive integer).`);
+    }
+    if (obj.version > LOCK_VERSION) {
+      throw new LockParseError(
+        `Lock version ${obj.version} is newer than this speclock supports (${LOCK_VERSION}). Upgrade speclock.`,
+      );
+    }
+    version = obj.version;
+  }
   const spec = typeof obj.spec === 'string' ? obj.spec : '';
 
   if (obj.criteria != null && !Array.isArray(obj.criteria)) {
@@ -145,15 +156,19 @@ export function parseLock(text: string): Lock {
       throw new LockParseError(`criteria[${i}] must be a mapping.`);
     }
     const c = item as Record<string, unknown>;
-    if (typeof c.id !== 'string' || c.id.trim() === '') {
+    const id = typeof c.id === 'string' ? c.id.trim() : '';
+    if (id === '') {
       throw new LockParseError(`criteria[${i}] is missing a string \`id\`.`);
     }
-    if (seen.has(c.id)) {
-      throw new LockParseError(`Duplicate criterion id "${c.id}" in lock.`);
+    if (seen.has(id)) {
+      throw new LockParseError(`Duplicate criterion id "${id}" in lock.`);
     }
-    seen.add(c.id);
+    seen.add(id);
+    if (c.description != null && typeof c.description !== 'string') {
+      throw new LockParseError(`criteria[${i}] \`description\` must be a string.`);
+    }
     const description = typeof c.description === 'string' ? c.description : '';
-    return { id: c.id, description, tests: asStringArray(c.tests) };
+    return { id, description, tests: asStringArray(c.tests) };
   });
 
   return { version, spec, criteria };

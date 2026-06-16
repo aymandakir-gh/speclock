@@ -120,3 +120,50 @@ describe('slugify', () => {
     expect(slugify('A/B testing & more')).toBe('a-b-testing-more');
   });
 });
+
+describe('parseSpec fenced-code edge cases', () => {
+  it('[SL-2] a shorter ``` fence inside a ```` block does not desync', () => {
+    const md = [
+      '## Acceptance Criteria',
+      '### AC-1: Show a fenced block in docs',
+      '````markdown',
+      '```',
+      '### Not a criterion',
+      '```',
+      '````',
+      '### AC-2: After the nested block',
+      '',
+    ].join('\n');
+    const { criteria } = parseSpec(md);
+    expect(criteria.map((c) => c.id)).toEqual(['AC-1', 'AC-2']);
+  });
+
+  it('[SL-2] a ~~~ line inside a ``` block is literal content', () => {
+    const md = [
+      '## Acceptance Criteria',
+      '### AC-1: Mixed fences',
+      '```',
+      '~~~',
+      '### Not a criterion',
+      '```',
+      '### AC-2: Still here',
+      '',
+    ].join('\n');
+    const { criteria } = parseSpec(md);
+    expect(criteria.map((c) => c.id)).toEqual(['AC-1', 'AC-2']);
+  });
+});
+
+describe('parseSpec ATX trailing #', () => {
+  it('[SL-2] keeps a trailing # when not space-preceded (e.g. C#)', () => {
+    const md = ['## Acceptance Criteria', '### AC-1: Compile C#', ''].join('\n');
+    const { criteria } = parseSpec(md);
+    expect(criteria[0]!.description).toBe('Compile C#');
+  });
+
+  it('[SL-2] still strips a space-preceded ATX closing sequence', () => {
+    const md = ['## Acceptance Criteria', '### AC-1: Done ###', ''].join('\n');
+    const { criteria } = parseSpec(md);
+    expect(criteria[0]!.description).toBe('Done');
+  });
+});

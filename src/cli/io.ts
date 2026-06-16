@@ -1,8 +1,10 @@
 /**
  * Filesystem helpers for the CLI layer. The pure core never imports this.
  *
- * speclock is read-only on user code. The only writers are `init` (SPEC.md) and
- * `plan` (specs/*.yaml); `writeText` is the single choke point for writes.
+ * speclock is read-only on user code. The only writers are `init` (a .md spec)
+ * and `plan` (a .yaml lock under specs/), and both validate their target path
+ * via src/cli/safe-write.ts before calling `writeText`, so writes can never
+ * escape those bounds.
  */
 
 import {

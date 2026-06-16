@@ -23,7 +23,9 @@ export class SpecParseError extends Error {
   }
 }
 
-const HEADING_RE = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
+// ATX heading; a trailing closing `#` run is only stripped when space-preceded
+// (per CommonMark), so descriptions like "Compile C#" are preserved.
+const HEADING_RE = /^(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/;
 const FENCE_RE = /^\s{0,3}(`{3,}|~{3,})/;
 const EXPLICIT_ID_RE = /^([A-Za-z][A-Za-z0-9._-]*):\s+(.*\S)\s*$/;
 const SECTION_TITLE_RE = /^acceptance\s+criteria$/i;
@@ -45,11 +47,29 @@ export function slugify(text: string): string {
 function scanHeadings(markdown: string): Heading[] {
   const lines = markdown.split(/\r?\n/);
   const headings: Heading[] = [];
+  // Track the opening fence's marker char and length: a fence block closes only
+  // on a fence of the same char and length >= the opener (CommonMark). This
+  // prevents a shorter/different fence inside a block from desyncing the toggle.
   let inFence = false;
+  let fenceChar = '';
+  let fenceLen = 0;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] as string;
-    if (FENCE_RE.test(line)) {
-      inFence = !inFence;
+    const fm = FENCE_RE.exec(line);
+    if (fm) {
+      const marker = fm[1]!;
+      const ch = marker[0]!;
+      const len = marker.length;
+      if (!inFence) {
+        inFence = true;
+        fenceChar = ch;
+        fenceLen = len;
+      } else if (ch === fenceChar && len >= fenceLen) {
+        inFence = false;
+        fenceChar = '';
+        fenceLen = 0;
+      }
+      // else: a non-matching fence line inside a block is literal content.
       continue;
     }
     if (inFence) continue;

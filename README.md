@@ -72,8 +72,9 @@ speclock status               # (anytime) coverage map, never fails the build
 
 ### 1. Write criteria in `SPEC.md`
 
-Acceptance criteria are `###` headings under `## Acceptance Criteria`. Each gets a
-short, stable id:
+`init` writes a starter template; replace its examples with your own. Acceptance
+criteria are `###` headings under `## Acceptance Criteria`, each with a short,
+stable id:
 
 ```markdown
 ## Acceptance Criteria
@@ -147,18 +148,20 @@ CI gates speclock on them. Real output from this repo:
 
 ```
 $ speclock check
-✅ SL-1  speclock init scaffolds a SPEC.md template (3 tests)
-✅ SL-2  speclock parses a SPEC.md into acceptance criteria (11 tests)
-✅ SL-3  speclock plan locks criteria into specs/*.yaml (12 tests)
+Ran vitest: 74 test(s), 9 criteria in 1 spec file(s).
+✅ SL-1  `speclock init` scaffolds a SPEC.md template (3 tests)
+✅ SL-2  speclock parses a SPEC.md into acceptance criteria (15 tests)
+✅ SL-3  `speclock plan` locks criteria into specs/*.yaml (16 tests)
 ✅ SL-4  the resolver maps criteria to tests (9 tests)
-✅ SL-5  speclock check gates on the spec (7 tests)
-✅ SL-6  a Vitest adapter runs the suite (5 tests)
-✅ SL-7  speclock status prints a coverage map (4 tests)
+✅ SL-5  `speclock check` gates on the spec (8 tests)
+✅ SL-6  a Vitest adapter runs the suite (6 tests)
+✅ SL-7  `speclock status` prints a coverage map (4 tests)
 ✅ SL-8  the core is pure (3 tests)
+✅ SL-9  speclock only writes spec and lock files (10 tests)
 
-8 criteria  ·  8 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
+9 criteria  ·  9 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
 
-✓ All 8 criteria are implemented and tested.
+✓ All 9 criteria are implemented and tested.
 ```
 
 See [`SPEC.md`](./SPEC.md), the lock at [`specs/spec.yaml`](./specs/spec.yaml),

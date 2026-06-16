@@ -52,6 +52,12 @@ summary, without failing the process.
 Everything under `src/core` is free of filesystem, child-process, and process
 I/O, so the heart of speclock is fully unit-testable.
 
+### SL-9: speclock only writes spec and lock files
+
+Writes are confined to a markdown spec (`init`) and a YAML lock under `specs/`
+(`plan`), always inside the project. A stray `--spec`/`--out` can never clobber a
+user's source or tests, or escape the project directory.
+
 ## Out of Scope
 
 - Adapters beyond Vitest (Jest/pytest/go ship later; the interface is ready).
