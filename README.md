@@ -169,26 +169,32 @@ CI gates speclock on them. Real output from this repo:
 
 ```
 $ speclock check
-Ran vitest: 103 test(s), 15 criteria in 1 spec file(s).
+Ran vitest: 138 test(s), 21 criteria in 1 spec file(s).
 ✅ SL-1   `speclock init` scaffolds a SPEC.md template (3 tests)
-✅ SL-2   speclock parses a SPEC.md into acceptance criteria (15 tests)
-✅ SL-3   `speclock plan` locks criteria into specs/*.yaml (16 tests)
+✅ SL-2   speclock parses a SPEC.md into acceptance criteria (17 tests)
+✅ SL-3   `speclock plan` locks criteria into specs/*.yaml (7 tests)
 ✅ SL-4   the resolver maps criteria to tests (9 tests)
 ✅ SL-5   `speclock check` gates on the spec (8 tests)
-✅ SL-6   a Vitest adapter runs the suite (6 tests)
+✅ SL-6   a Vitest adapter runs the suite (9 tests)
 ✅ SL-7   `speclock status` prints a coverage map (4 tests)
 ✅ SL-8   the core is pure (3 tests)
-✅ SL-9   speclock only writes spec and lock files (10 tests)
+✅ SL-9   speclock only writes spec and lock files (13 tests)
 ✅ SL-10  a Jest adapter runs the suite (6 tests)
-✅ SL-11  a pytest adapter runs the suite (8 tests)
+✅ SL-11  a pytest adapter runs the suite (11 tests)
 ✅ SL-12  `speclock check --json` emits a machine-readable report (7 tests)
-✅ SL-13  `speclock status --json` emits a machine-readable report (2 tests)
+✅ SL-13  `speclock status --json` emits a machine-readable report (3 tests)
 ✅ SL-14  speclock is publish-ready as `speclock-cli` (3 tests)
 ✅ SL-15  a reusable GitHub Action gates a project on `speclock check` (2 tests)
+✅ SL-16  criteria are aggregated across all lock files in a directory (4 tests)
+✅ SL-17  an unknown runner is rejected with the available runners listed (1 test)
+✅ SL-18  `check` returns honest exit codes (4 tests)
+✅ SL-19  output color is injected and disables cleanly (9 tests)
+✅ SL-20  `speclock status` never fails the build (3 tests)
+✅ SL-21  the lock file is versioned and schema-validated (10 tests)
 
-15 criteria  ·  15 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
+21 criteria  ·  21 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
 
-✓ All 15 criteria are implemented and tested.
+✓ All 21 criteria are implemented and tested.
 ```
 
 See [`SPEC.md`](./SPEC.md), the lock at [`specs/spec.yaml`](./specs/spec.yaml),

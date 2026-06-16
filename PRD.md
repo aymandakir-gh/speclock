@@ -1,7 +1,8 @@
 # speclock — Product Requirements Document
 
 > Status: living document. Decisions are encoded here and in commits for later review.
-> Last updated: 2026-06-16 (v1.0.0 push — adapters, JSON, Action, packaging).
+> Last updated: 2026-06-16 (v1.0.0 shipped — 3 adapters, JSON, Action, packaging,
+> adversarial review). Roadmap M5–M9 complete; CI green at every tag.
 
 ## 1. Problem
 

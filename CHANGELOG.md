@@ -4,6 +4,38 @@ All notable changes to speclock are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims to follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.0] — 2026-06-16
+
+First stable release. speclock is a drop-in CI gate for the three test runners
+agent-built projects use most, with machine-readable output, a reusable Action,
+and a hardened, dogfooded self-gate.
+
+### Highlights (since 0.1)
+
+- **Three test-runner adapters** — Vitest, Jest, and pytest — each proven against
+  a real project under `examples/` and gated **both directions** in CI (`check`
+  exits 0 when mapped tests pass, non-zero when one is deleted or made to fail).
+- **Machine-readable output** — `check --json` / `status --json` with a versioned,
+  documented schema (`docs/JSON.md`).
+- **Reusable composite GitHub Action** (`action.yml`), documented with a
+  copy-paste snippet and **dogfooded** by speclock's own self-gate job.
+- **Publish-ready** as `speclock-cli` (command stays `speclock`), verified by
+  `npm pack` + install-from-tarball in CI. (Registry publish remains the
+  maintainer's call — see PRD §8.)
+- **Hardened self-gate**: speclock's own `SPEC.md` now has **21 acceptance
+  criteria** (SL-1…SL-21), each mapped to ≥1 passing test; **138 tests**;
+  `src/core` coverage gated in CI at ≥90% line / ≥80% branch.
+
+### Pre-1.0 adversarial review
+
+A multi-agent adversarial review (6 lenses + per-finding verification) raised 12
+findings — **all 12 confirmed, 0 declined** — each fixed with a regression test.
+Notable: a spec-parser code-fence desync that could silently drop a criterion
+(false-green); pytest no longer reporting a green suite after an interrupted run;
+the Vitest adapter handling an empty/zero-match suite as untested criteria
+instead of a config-error crash; and a symlink-escape hardening of the SL-9
+write-safety invariant. Full record in [`docs/REVIEW-v1.0.0.md`](./docs/REVIEW-v1.0.0.md).
+
 ## [0.5.0] — 2026-06-16
 
 A drop-in CI gate, and proof speclock is publish-ready.
@@ -146,6 +178,7 @@ gating itself in CI.
   taken by an unrelated project; this package is `speclock-cli` (command:
   `speclock`). Registry publish is pending a naming decision — see `PRD.md` §8.
 
+[1.0.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v1.0.0
 [0.5.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.5.0
 [0.4.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.4.0
 [0.3.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.3.0

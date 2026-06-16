@@ -6,3 +6,8 @@ coverage/
 .vitest/
 *.tmp
 .speclock-tmp/
+
+# Python (from the pytest example/fixtures)
+__pycache__/
+*.py[cod]
+.pytest_cache/

@@ -5,16 +5,19 @@
 
 ## Now
 
-- **Shipped v0.1.0 → v0.1.1.** The full `init → plan → check → status` loop with
-  a Vitest adapter; CI green incl. the self-gate (`speclock check` gates 9/9 on
-  itself). An adversarial review fixed 15 findings; write safety is criterion SL-9.
-- **Driving to v1.0.0 (in progress).** Roadmap M5–M9 in PRD §7: Jest + pytest
-  adapters (each with a real `examples/` project gated both directions in CI),
-  JSON output, a reusable GitHub Action, packaging verification, a hardened
-  ≥20-criteria self-gate, and a final adversarial review. One tag per milestone.
+- **Shipped v1.0.0.** speclock is a drop-in CI gate for **Vitest, Jest, and
+  pytest** (each with a real `examples/` project gated both directions in CI),
+  with `--json` output, a reusable composite **GitHub Action** (dogfooded by the
+  self-gate), and `npm pack` install-from-tarball verification. The self-gate is
+  hardened to **21 criteria / 138 tests**; `src/core` coverage is gated at
+  ≥90% line / ≥80% branch. A pre-1.0 multi-agent adversarial review raised 12
+  findings — all 12 confirmed and fixed, 0 declined (`docs/REVIEW-v1.0.0.md`).
+  CI green at every tag v0.2.0 → v1.0.0.
 - **Open decision for the maintainer:** npm name `speclock` is taken by an
   unrelated adjacent tool → registry publish deferred (see PRD §8). The package is
-  publish-ready as `speclock-cli`; the maintainer pulls the trigger.
+  publish-ready as `speclock-cli`; the maintainer pulls the trigger
+  (`pnpm publish --access public`). The vhs demo GIF records from
+  `demo/speclock.tape` (`vhs demo/speclock.tape`).
 
 ## Milestones
 
@@ -29,7 +32,7 @@
 | M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ✅ done |
 | M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ✅ done |
 | M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ✅ done |
-| M9 `v1.0.0` harden | ≥20 criteria, ≥120 tests, core coverage gate, adversarial review | ⏳ |
+| M9 `v1.0.0` harden | 21 criteria, 138 tests, core coverage gate, adversarial review (12/12 fixed) | ✅ done |
 
 ## Done
 
@@ -77,6 +80,12 @@
   job now runs through it (dogfood); `scripts/verify-package.mjs` + a CI
   `package` job pack/install/run the tarball (publish-ready as `speclock-cli`).
   SL-14/15 added; gates **15/15**; 103 tests.
+- **M9 `v1.0.0`:** criteria SL-16…SL-21 (lock aggregation, unknown-runner error,
+  check exit codes, injectable color, status-never-gates, lock validation);
+  `src/core` coverage gated in CI (≥90% line / ≥80% branch); pre-1.0 multi-agent
+  adversarial review — 12 findings, all confirmed and fixed with regression
+  tests, 0 declined (`docs/REVIEW-v1.0.0.md`); issue/PR templates; README demo +
+  examples sections. Gates **21/21**; 138 tests.
 
 ## Key decisions (see PRD §8)
 
