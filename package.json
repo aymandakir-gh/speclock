@@ -1,7 +1,7 @@
 {
-  "name": "speclock",
+  "name": "speclock-cli",
   "version": "0.1.0",
-  "description": "Lock the spec, gate the merge. Spec-driven development for the agentic era.",
+  "description": "Lock the spec, gate the merge. Spec-driven development for the agentic era. (The CLI command is `speclock`.)",
   "type": "module",
   "bin": {
     "speclock": "dist/cli/index.js"
@@ -25,7 +25,8 @@
     "coverage": "vitest run --coverage",
     "check:self": "node dist/cli/index.js check",
     "status:self": "node dist/cli/index.js status",
-    "prepublishOnly": "pnpm run build"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "spec",

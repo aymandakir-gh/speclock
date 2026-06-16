@@ -5,9 +5,11 @@
 
 ## Now
 
-- **M2 + status landed.** `speclock check` passes on speclock itself (8/8 ✅).
-  `status` shipped early to keep the self-check whole. M3 is now just the CI
-  self-gate job + README demo + release tagging.
+- **M4 Launch polish** — finishing. README/CONTRIBUTING/adapter docs/CHANGELOG +
+  demo tape written; tagging v0.1.0 and cutting a GitHub release.
+- **Open decision for the maintainer:** npm name `speclock` is taken by an
+  unrelated adjacent tool → registry publish deferred (see PRD §8). Tool is
+  usable today via `npx github:aymandakir-gh/speclock`.
 
 ## Milestones
 
@@ -16,8 +18,8 @@
 | M0 Bootstrap | PRD, scaffold, configs, CI, repo, green baseline | ✅ done |
 | M1 Core | SPEC parser, criteria model, `init`, `plan`, fixtures | ✅ done |
 | M2 check + adapter | resolver, checker, Vitest adapter, `check`, `status`, dogfood green | ✅ done |
-| M3 self-gate + demo | CI self-gate job (live), README demo, release tag | 🚧 next |
-| M4 Launch polish | README, CONTRIBUTING, adapter docs, release | ⬜ |
+| M3 self-gate + demo | CI self-gate job (live & green), demo tape | ✅ done |
+| M4 Launch polish | README, CONTRIBUTING, adapter docs, CHANGELOG, release | 🚧 finishing |
 
 ## Done
 

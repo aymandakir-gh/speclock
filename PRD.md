@@ -124,6 +124,17 @@ speclock succeeds if:
   passes iff every criterion is ✅.
 - **Why YAML for the lock:** human-diffable in PRs (the lock is the thing reviewers
   look at), comment-friendly, and trivially machine-readable.
+- **npm name collision (FLAGGED FOR REVIEW):** the bare npm name `speclock` is
+  already taken by an unrelated — but adjacent — tool (`sgroy10/speclock`, an
+  AI-rule-file guardrail: "npx speclock protect"). So `npx speclock` cannot resolve
+  to this project, and we cannot publish under `speclock`. Decisions taken:
+  (1) keep the GitHub repo, the CLI command, and the product name as `speclock`;
+  (2) distribute now via `npx github:aymandakir-gh/speclock` (a `prepare` build
+  hook makes the git-install runnable without committing `dist/`);
+  (3) name the npm package `speclock-cli` (command stays `speclock`) so it's
+  publish-ready. **Registry publish is intentionally deferred** — it's the one
+  irreversible, namespace-claiming action, and given the collision the maintainer
+  may prefer to rebrand. Publish with `pnpm publish --access public` once decided.
 
 ## 9. Risks & mitigations
 
