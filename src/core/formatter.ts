@@ -4,7 +4,7 @@
  * ANSI palette, tests pass the identity palette.
  */
 
-import type { CheckResult, CoverageReport, CriterionState } from './types.js';
+import type { CheckResult, CoverageReport, CriterionState, TestRunResult } from './types.js';
 
 export interface Palette {
   green(s: string): string;
@@ -84,4 +84,88 @@ export function formatCheckResult(result: CheckResult, p: Palette): string {
   }
   const problems = result.problems.map((x) => p.red(`  • ${x}`)).join('\n');
   return `${head}\n\n${p.red('✗ speclock check failed:')}\n${problems}`;
+}
+
+// --- Machine-readable JSON output ---------------------------------------------
+//
+// `check --json` / `status --json` emit one JSON object on stdout for PR bots
+// and other tooling. The shape is versioned via `schemaVersion`; new fields may
+// be added within a version, but existing fields keep their meaning.
+
+/** Current version of the JSON output schema. */
+export const JSON_SCHEMA_VERSION = 1;
+
+export interface JsonMeta {
+  /** Name of the adapter/runner that produced the results. */
+  runner: string;
+}
+
+/** Build the part of the JSON report shared by `check` and `status`. */
+function coverageJsonBase(
+  command: 'check' | 'status',
+  report: CoverageReport,
+  run: TestRunResult,
+  meta: JsonMeta,
+): Record<string, unknown> {
+  return {
+    schemaVersion: JSON_SCHEMA_VERSION,
+    tool: 'speclock',
+    command,
+    runner: meta.runner,
+    ok: report.summary.untested === 0 && report.summary.failing === 0 && run.ok,
+    summary: {
+      total: report.summary.total,
+      tested: report.summary.tested,
+      failing: report.summary.failing,
+      untested: report.summary.untested,
+    },
+    suite: {
+      ok: run.ok,
+      tests: run.tests.length,
+      note: run.note ?? null,
+    },
+    criteria: report.criteria.map((c) => ({
+      id: c.id,
+      description: c.description,
+      state: c.state,
+      tests: c.matchedTests.map((t) => {
+        const out: Record<string, unknown> = { name: t.name, status: t.status };
+        if (t.file != null) out.file = t.file;
+        if (t.duration != null) out.duration = t.duration;
+        return out;
+      }),
+    })),
+  };
+}
+
+/** `status --json`: the coverage report as a JSON string (no gate verdict). */
+export function formatStatusJson(
+  report: CoverageReport,
+  run: TestRunResult,
+  meta: JsonMeta,
+): string {
+  return JSON.stringify(coverageJsonBase('status', report, run, meta), null, 2);
+}
+
+/** `check --json`: the coverage report plus the gate verdict and problems. */
+export function formatCheckJson(
+  result: CheckResult,
+  run: TestRunResult,
+  meta: JsonMeta,
+): string {
+  const base = coverageJsonBase('check', result.report, run, meta);
+  // `check` owns the authoritative verdict (it also fails on an unmapped red
+  // suite), so override `ok` with the gate result and attach its reasons.
+  base.ok = result.ok;
+  base.problems = result.problems;
+  return JSON.stringify(base, null, 2);
+}
+
+/** A JSON error object for `--json` mode when coverage can't be computed. */
+export function formatJsonError(command: 'check' | 'status', message: string): string {
+  return JSON.stringify(
+    { schemaVersion: JSON_SCHEMA_VERSION, tool: 'speclock', command, ok: false, error: message },
+    null,
+    2,
+  );
 }

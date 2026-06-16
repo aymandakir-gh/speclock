@@ -70,6 +70,17 @@ The pytest adapter runs `pytest --junit-xml` and parses the JUnit XML into the
 same runner-agnostic pass/fail/skip result with a small pure parser. Selected
 with `speclock check --runner pytest`.
 
+### SL-12: `speclock check --json` emits a machine-readable report
+
+With `--json`, `check` prints one JSON object (stable `schemaVersion`) on stdout
+carrying the gate verdict, per-criterion coverage, suite info, and problems —
+diagnostics stay on stderr and the exit code is unchanged.
+
+### SL-13: `speclock status --json` emits a machine-readable report
+
+With `--json`, `status` prints one JSON object on stdout with the same coverage
+schema (no gate verdict), for PR bots and tooling.
+
 ## Out of Scope
 
 - Adapters beyond Vitest/Jest/pytest (`go test` and others ship later; the

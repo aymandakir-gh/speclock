@@ -4,6 +4,28 @@ All notable changes to speclock are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims to follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-06-16
+
+Machine-readable output for tooling and PR bots.
+
+### Added
+
+- **`speclock check --json` and `speclock status --json`** print one JSON object
+  on stdout (versioned via `schemaVersion`) carrying the gate verdict,
+  per-criterion coverage, suite info, and (for `check`) problems. Human
+  diagnostics stay on stderr and the exit code is unchanged; a config error still
+  emits valid JSON (an error object) with exit `2`. Schema documented in
+  [`docs/JSON.md`](./docs/JSON.md).
+- New self-criteria **SL-12** and **SL-13**; `speclock check` gates **13/13** on
+  itself. 98 tests (incl. command-level tests via an injectable in-memory
+  adapter).
+
+### Fixed
+
+- `check`/`status` now resolve the lock directory against the working directory
+  consistently with where the adapter runs (groundwork for the injectable
+  adapter; no change to normal CLI usage).
+
 ## [0.3.0] — 2026-06-16
 
 Third adapter — speclock now gates the three runners agent-built projects use most.
@@ -107,6 +129,7 @@ gating itself in CI.
   taken by an unrelated project; this package is `speclock-cli` (command:
   `speclock`). Registry publish is pending a naming decision — see `PRD.md` §8.
 
+[0.4.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.4.0
 [0.3.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.3.0
 [0.2.0]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.2.0
 [0.1.1]: https://github.com/aymandakir-gh/speclock/releases/tag/v0.1.1

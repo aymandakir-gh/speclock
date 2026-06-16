@@ -39,3 +39,9 @@ criteria:
   - id: SL-11
     description: a pytest adapter runs the suite
     tests: []
+  - id: SL-12
+    description: "`speclock check --json` emits a machine-readable report"
+    tests: []
+  - id: SL-13
+    description: "`speclock status --json` emits a machine-readable report"
+    tests: []

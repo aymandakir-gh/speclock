@@ -53,8 +53,13 @@ program
   .description('Run the suite and fail unless every criterion maps to a passing test')
   .option('-d, --dir <path>', 'directory of lock files', 'specs')
   .option('-r, --runner <name>', 'test-runner adapter', 'vitest')
-  .action(async (opts: { dir: string; runner: string }) => {
-    process.exitCode = await runCheckCommand({ dir: opts.dir, runner: opts.runner });
+  .option('--json', 'emit a machine-readable JSON report on stdout', false)
+  .action(async (opts: { dir: string; runner: string; json: boolean }) => {
+    process.exitCode = await runCheckCommand({
+      dir: opts.dir,
+      runner: opts.runner,
+      json: opts.json,
+    });
   });
 
 program
@@ -62,8 +67,13 @@ program
   .description('Print a coverage map of criteria (does not fail the build)')
   .option('-d, --dir <path>', 'directory of lock files', 'specs')
   .option('-r, --runner <name>', 'test-runner adapter', 'vitest')
-  .action(async (opts: { dir: string; runner: string }) => {
-    process.exitCode = await runStatusCommand({ dir: opts.dir, runner: opts.runner });
+  .option('--json', 'emit a machine-readable JSON report on stdout', false)
+  .action(async (opts: { dir: string; runner: string; json: boolean }) => {
+    process.exitCode = await runStatusCommand({
+      dir: opts.dir,
+      runner: opts.runner,
+      json: opts.json,
+    });
   });
 
 program.addHelpText(

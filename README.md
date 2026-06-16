@@ -148,7 +148,7 @@ CI gates speclock on them. Real output from this repo:
 
 ```
 $ speclock check
-Ran vitest: 89 test(s), 11 criteria in 1 spec file(s).
+Ran vitest: 98 test(s), 13 criteria in 1 spec file(s).
 ✅ SL-1   `speclock init` scaffolds a SPEC.md template (3 tests)
 ✅ SL-2   speclock parses a SPEC.md into acceptance criteria (15 tests)
 ✅ SL-3   `speclock plan` locks criteria into specs/*.yaml (16 tests)
@@ -160,10 +160,12 @@ Ran vitest: 89 test(s), 11 criteria in 1 spec file(s).
 ✅ SL-9   speclock only writes spec and lock files (10 tests)
 ✅ SL-10  a Jest adapter runs the suite (6 tests)
 ✅ SL-11  a pytest adapter runs the suite (8 tests)
+✅ SL-12  `speclock check --json` emits a machine-readable report (7 tests)
+✅ SL-13  `speclock status --json` emits a machine-readable report (2 tests)
 
-11 criteria  ·  11 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
+13 criteria  ·  13 ✅ tested  ·  0 🚧 failing  ·  0 ❌ untested
 
-✓ All 11 criteria are implemented and tested.
+✓ All 13 criteria are implemented and tested.
 ```
 
 See [`SPEC.md`](./SPEC.md), the lock at [`specs/spec.yaml`](./specs/spec.yaml),
@@ -195,6 +197,25 @@ and pytest** ship today (pick with `--runner`). See
 
 ---
 
+## Machine-readable output
+
+For PR bots and dashboards, add `--json` to `check` or `status`. stdout is then a
+single JSON object; human diagnostics go to stderr and the exit code is
+unchanged:
+
+```bash
+$ speclock check --json | jq '{ ok, summary }'
+{
+  "ok": false,
+  "summary": { "total": 2, "tested": 1, "failing": 1, "untested": 0 }
+}
+```
+
+The object is versioned (`schemaVersion`) and documented — fields, the
+per-criterion shape, and the error form — in [docs/JSON.md](./docs/JSON.md).
+
+---
+
 ## Why it matters
 
 The bottleneck of agentic development is no longer typing speed — it's
@@ -221,7 +242,7 @@ source and tests — the only files it ever writes are `SPEC.md` (`init`) and
 - [x] `init`, `plan`, `check`, `status`
 - [x] **Vitest, Jest, and pytest** adapters (each with a real example, gated both ways in CI)
 - [x] speclock gates itself in CI
-- [ ] `speclock check --json` for tooling/PR bots
+- [x] `speclock check --json` / `status --json` for tooling/PR bots
 - [ ] Reusable GitHub Action
 - [ ] `go test` adapter
 - [ ] Publish to npm registry (pending the naming decision above)

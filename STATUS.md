@@ -27,7 +27,7 @@
 | M4 Launch polish | README, CONTRIBUTING, adapter docs, CHANGELOG, release | ✅ done |
 | M5 `v0.2.0` Jest | shared spawn/parse helper, Jest adapter, `examples/jest-demo`, both-dir CI, SL-10 | ✅ done |
 | M6 `v0.3.0` pytest | pytest/JUnit adapter, `examples/pytest-demo` + `vitest-demo`, SL-11 | ✅ done |
-| M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ⏳ |
+| M7 `v0.4.0` JSON | `check/status --json`, stable schema, SL-12/13 | ✅ done |
 | M8 `v0.5.0` Action+pkg | composite Action (dogfooded), `npm pack` verify | ⏳ |
 | M9 `v1.0.0` harden | ≥20 criteria, ≥120 tests, core coverage gate, adversarial review | ⏳ |
 
@@ -69,6 +69,10 @@
   pure JUnit parser (`src/adapters/junit.ts`); `examples/pytest-demo` (explicit
   `tests:` mapping) and `examples/vitest-demo`, so all three runners have a real,
   CI-verified example. SL-11 added; gates **11/11**; 89 tests.
+- **M7 `v0.4.0`:** `check --json` / `status --json` emit a versioned, documented
+  JSON object on stdout (diagnostics on stderr, exit codes unchanged); pure
+  formatters in `src/core`, command-level tests via an injectable in-memory
+  adapter. SL-12/13 added; gates **13/13**; 98 tests. Schema in `docs/JSON.md`.
 
 ## Key decisions (see PRD §8)
 

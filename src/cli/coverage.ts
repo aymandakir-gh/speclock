@@ -4,16 +4,20 @@
  * commands can map failures to exit codes.
  */
 
+import { resolve } from 'node:path';
 import { resolveCoverage } from '../core/resolver.js';
 import type { CoverageReport, TestRunResult } from '../core/types.js';
 import { getAdapter, adapterNames } from '../adapters/index.js';
 import { AdapterError } from '../adapters/types.js';
+import type { TestRunnerAdapter } from '../adapters/types.js';
 import { loadLocks, SpecLoadError } from './specs.js';
 
 export interface CoverageOptions {
   dir: string;
   runner: string;
   cwd: string;
+  /** Inject a runner (tests) instead of resolving `runner` from the registry. */
+  adapter?: TestRunnerAdapter;
 }
 
 export type CoverageOutcome =
@@ -30,9 +34,12 @@ export type CoverageOutcome =
 export async function computeCoverage(
   opts: CoverageOptions,
 ): Promise<CoverageOutcome> {
+  // Resolve the lock dir against the (possibly injected) cwd so it tracks the
+  // same root the adapter runs in; messages still show the user's `dir`.
+  const lockDir = resolve(opts.cwd, opts.dir);
   let loaded;
   try {
-    loaded = loadLocks(opts.dir);
+    loaded = loadLocks(lockDir);
   } catch (e) {
     return {
       ok: false,
@@ -55,7 +62,7 @@ export async function computeCoverage(
     };
   }
 
-  const adapter = getAdapter(opts.runner);
+  const adapter = opts.adapter ?? getAdapter(opts.runner);
   if (!adapter) {
     return {
       ok: false,
