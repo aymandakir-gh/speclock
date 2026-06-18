@@ -19,6 +19,16 @@ export interface SpawnResult {
   timedOut: boolean;
 }
 
+/**
+ * Cap on captured stdout/stderr (chars). Results come from the JSON/JUnit report
+ * file, not this output — it's kept only for diagnostics — so a misbehaving or
+ * very chatty runner (e.g. a test stuck printing in a loop) must not be able to
+ * grow these strings to hundreds of MB and OOM speclock before the timeout fires.
+ * We keep the head (where errors usually surface) and drop the rest.
+ */
+export const MAX_CAPTURED_BYTES = 1_000_000;
+const TRUNCATION_MARKER = '\n…(truncated)';
+
 /** Walk up from `startDir` to find a local `node_modules/.bin/<bin>`. */
 export function resolveLocalBin(startDir: string, bin: string): string | undefined {
   const binName = process.platform === 'win32' ? `${bin}.cmd` : bin;
@@ -100,14 +110,25 @@ export function spawnProcess(
       fn();
     };
 
+    // Append `d` to a capture buffer while keeping it under MAX_CAPTURED_BYTES.
+    // Once the cap is hit we stop appending (keeping the head) and tack on a
+    // single truncation marker so the diagnostic plainly shows it was cut off.
+    let stdoutTruncated = false;
+    let stderrTruncated = false;
+    const append = (buf: string, d: string, truncated: boolean): [string, boolean] => {
+      if (truncated) return [buf, true];
+      if (buf.length + d.length <= MAX_CAPTURED_BYTES) return [buf + d, false];
+      return [buf + d.slice(0, MAX_CAPTURED_BYTES - buf.length) + TRUNCATION_MARKER, true];
+    };
+
     // setEncoding makes Node buffer partial multibyte sequences across chunks.
     child.stdout?.setEncoding('utf8');
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', (d: string) => {
-      stdout += d;
+      [stdout, stdoutTruncated] = append(stdout, d, stdoutTruncated);
     });
     child.stderr?.on('data', (d: string) => {
-      stderr += d;
+      [stderr, stderrTruncated] = append(stderr, d, stderrTruncated);
     });
     // Prevent an unhandled stream 'error' from crashing the process; output is
     // best-effort and only used for diagnostics.
