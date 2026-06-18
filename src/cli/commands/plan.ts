@@ -72,6 +72,23 @@ export function runPlan(opts: PlanOptions): number {
     }
   }
 
+  // Default-path collision guard: distinct specs that share a basename (e.g.
+  // auth/login.md and billing/login.md) both default to specs/login.yaml and
+  // would silently merge into / overwrite one another. The lock records the spec
+  // it was generated from, so refuse rather than clobber a different spec's lock.
+  if (
+    existing &&
+    opts.out === undefined &&
+    resolve(cwd, existing.spec) !== resolve(cwd, opts.spec)
+  ) {
+    err(c.red(`${defaultOutPath(opts.spec)} already locks a different spec (${existing.spec}).`));
+    err(
+      `Specs sharing the basename "${basename(opts.spec)}" collide on the default lock path. ` +
+        `Pass ${c.bold('--out <specs/….yaml>')} to write a distinct lock.`,
+    );
+    return 2;
+  }
+
   const result = mergeLock(existing, parsed.criteria, opts.spec);
   writeText(outPath, serializeLock(result.lock));
 
