@@ -42,6 +42,18 @@ describe('parseJUnitXml', () => {
     expect(parseJUnitXml(xml).tests[0]!.name).toBe('m::test x <1> & y');
   });
 
+  it('[SL-11] decodes valid numeric refs and leaves out-of-range ones literal (no crash)', () => {
+    // String.fromCodePoint throws RangeError above U+10FFFF; a runner emitting
+    // such a ref must not crash the whole parse.
+    const xml = `<testsuite><testcase classname="m" name="ok &#65;&#x42; bad &#x110000;&#9999999999;" /></testsuite>`;
+    let result: ReturnType<typeof parseJUnitXml> | undefined;
+    expect(() => {
+      result = parseJUnitXml(xml);
+    }).not.toThrow();
+    // Valid refs decode (&#65;->A, &#x42;->B); out-of-range refs stay literal.
+    expect(result!.tests[0]!.name).toBe('m::ok AB bad &#x110000;&#9999999999;');
+  });
+
   it('[SL-11] throws AdapterError on empty input', () => {
     expect(() => parseJUnitXml('')).toThrow(AdapterError);
     expect(() => parseJUnitXml('   ')).toThrow(/empty/);

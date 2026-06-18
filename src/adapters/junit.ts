@@ -14,6 +14,16 @@
 import type { TestCaseResult, TestRunResult, TestStatus } from '../core/types.js';
 import { AdapterError } from './types.js';
 
+/**
+ * Decode a numeric character reference, or return its literal text if the code
+ * point is out of the valid Unicode range. `String.fromCodePoint` throws a
+ * RangeError for anything above U+10FFFF, so an attribute like `&#x110000;` in
+ * a runner's report would otherwise crash the entire parse.
+ */
+function decodeCharRef(cp: number, literal: string): string {
+  return cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : literal;
+}
+
 /** Decode the XML entities that can appear in attribute values. */
 function decodeEntities(s: string): string {
   return s
@@ -21,8 +31,8 @@ function decodeEntities(s: string): string {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (m: string, h: string) => decodeCharRef(parseInt(h, 16), m))
+    .replace(/&#(\d+);/g, (m: string, d: string) => decodeCharRef(parseInt(d, 10), m))
     // Ampersand last so we don't double-decode (e.g. "&amp;lt;" -> "&lt;").
     .replace(/&amp;/g, '&');
 }
