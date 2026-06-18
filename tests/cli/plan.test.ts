@@ -52,4 +52,30 @@ describe('runPlan', () => {
       expect(existsSync(join(dir, '..', 'escape.yaml'))).toBe(false);
     });
   });
+
+  it('refuses to clobber a lock generated from a different spec sharing a basename', () => {
+    withTempDir((dir) => {
+      mkdirSync(join(dir, 'auth'));
+      mkdirSync(join(dir, 'billing'));
+      writeFileSync(join(dir, 'auth', 'login.md'), SPEC);
+      writeFileSync(join(dir, 'billing', 'login.md'), SPEC);
+
+      // First spec locks specs/login.yaml (default path derived from basename).
+      expect(runPlan({ spec: 'auth/login.md', cwd: dir })).toBe(0);
+      const lockPath = join(dir, 'specs', 'login.yaml');
+      const before = readFileSync(lockPath, 'utf8');
+      expect(parseLock(before).spec).toBe('auth/login.md');
+
+      // Second spec shares the basename → default path collides → refused, the
+      // first lock is left byte-for-byte untouched (no silent overwrite/merge).
+      expect(runPlan({ spec: 'billing/login.md', cwd: dir })).toBe(2);
+      expect(readFileSync(lockPath, 'utf8')).toBe(before);
+
+      // An explicit --out lets the colliding spec coexist.
+      expect(
+        runPlan({ spec: 'billing/login.md', out: 'specs/billing-login.yaml', cwd: dir }),
+      ).toBe(0);
+      expect(existsSync(join(dir, 'specs', 'billing-login.yaml'))).toBe(true);
+    });
+  });
 });
