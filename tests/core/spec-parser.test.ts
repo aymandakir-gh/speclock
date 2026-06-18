@@ -191,3 +191,40 @@ describe('parseSpec ATX trailing #', () => {
     expect(criteria[0]!.description).toBe('Done');
   });
 });
+
+describe('parseSpec line splitting', () => {
+  // The document is immutable inside parseSpec, so it must be tokenized into
+  // lines exactly once regardless of how many criteria it has — re-splitting
+  // per criterion was O(criteria × fileSize) redundant work.
+  it('[SL-2] splits the document into lines exactly once, independent of criterion count', () => {
+    const buildSpec = (n: number): string => {
+      const lines = ['# Proj', '', '## Acceptance Criteria', ''];
+      for (let i = 1; i <= n; i++) {
+        lines.push(`### AC-${i}: Criterion ${i}`, `Detail for ${i}.`, '');
+      }
+      return lines.join('\n');
+    };
+
+    const countNewlineSplits = (md: string): number => {
+      let calls = 0;
+      const orig = String.prototype.split;
+      const spy = function (this: string, ...args: unknown[]): string[] {
+        const sep = args[0];
+        if (sep instanceof RegExp && sep.source.includes('\\n')) calls++;
+        return (orig as (...a: unknown[]) => string[]).apply(this, args);
+      };
+      // eslint-disable-next-line no-extend-native
+      String.prototype.split = spy as unknown as typeof String.prototype.split;
+      try {
+        parseSpec(md);
+      } finally {
+        String.prototype.split = orig;
+      }
+      return calls;
+    };
+
+    // The split count must not grow with the number of criteria.
+    expect(countNewlineSplits(buildSpec(3))).toBe(1);
+    expect(countNewlineSplits(buildSpec(20))).toBe(1);
+  });
+});

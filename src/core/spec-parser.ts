@@ -50,8 +50,7 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-function scanHeadings(markdown: string): Heading[] {
-  const lines = markdown.split(/\r?\n/);
+function scanHeadings(lines: string[]): Heading[] {
   const headings: Heading[] = [];
   // Track the opening fence's marker char and length: a fence block closes only
   // on a fence of the same char and length >= the opener (CommonMark). This
@@ -91,8 +90,7 @@ function scanHeadings(markdown: string): Heading[] {
   return headings;
 }
 
-function detailBetween(markdown: string, startLine: number, endLine: number): string {
-  const lines = markdown.split(/\r?\n/);
+function detailBetween(lines: string[], startLine: number, endLine: number): string {
   return lines
     .slice(startLine + 1, endLine)
     .join('\n')
@@ -107,7 +105,11 @@ function detailBetween(markdown: string, startLine: number, endLine: number): st
  * (duplicate ids, a heading with no description, an underivable id).
  */
 export function parseSpec(markdown: string): SpecParseResult {
-  const headings = scanHeadings(markdown);
+  // Split the document into lines exactly once and share the array with every
+  // helper: it's immutable here, so re-splitting per criterion was pure
+  // redundant O(criteria × fileSize) work.
+  const lines = markdown.split(/\r?\n/);
+  const headings = scanHeadings(lines);
   const warnings: string[] = [];
 
   const sectionIdx = headings.findIndex(
@@ -123,7 +125,7 @@ export function parseSpec(markdown: string): SpecParseResult {
   }
 
   // Heading lines after the section, up to the next h1/h2 (section boundary).
-  const lineCount = markdown.split(/\r?\n/).length;
+  const lineCount = lines.length;
   const criteria: Criterion[] = [];
   const seen = new Map<string, string>();
   let autoIdCount = 0;
@@ -180,7 +182,7 @@ export function parseSpec(markdown: string): SpecParseResult {
         break;
       }
     }
-    const detail = detailBetween(markdown, h.line, boundaryLine);
+    const detail = detailBetween(lines, h.line, boundaryLine);
 
     criteria.push(detail ? { id, description, detail } : { id, description });
   }
